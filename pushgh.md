@@ -1,5 +1,13 @@
 <div align="center">
 
+  <p align="center">
+      <img
+          src="https://raw.githubusercontent.com/LeThaiToan2k4/Simple-Location-Marking/Fabric-1.21.11/docs/banner.png"
+          alt="Simple Location Marking Banner"
+          width="100%"
+      />
+  </p>
+
   <p>
     <a href="https://ko-fi.com/thaistoanf"><img src="https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support on Ko-fi" /></a>
   </p>
@@ -43,6 +51,7 @@ It is designed specifically for players who want clean, readable 3D in-world loc
 ## GUI & Controls Guide
 
 ### 1. Main Management Screen (`P` Key)
+
 - Press **`P`** in-game (rebindable in **Options -> Controls -> Key Binds** under **Simple Location Marking**) to open the **Location Management Screen**, rendered over a subtle dark translucent overlay (`0x7008090C`) without opaque dirt backgrounds or color-washing blur shaders.
 - **Header Info Bar:** Displays your current **Dimension** inside an accent-colored pill badge (emerald green for `Overworld`, crimson for `Nether`, purple for `The End`) and your standing **Coordinates (`X, Y, Z`)** in a companion pill box.
 - **Scrollable Waypoint List:** Displays every waypoint in your current dimension inside a recessed dark glass viewport (`0x880B0C10`) with a slim `4px` semi-transparent scrollbar. Each row card shows:
@@ -50,6 +59,7 @@ It is designed specifically for players who want clean, readable 3D in-world loc
   - Click any row card to select that waypoint, or double-click a row card to edit it directly.
 
 ### 2. Action Buttons
+
 - **`Add` (Always Enabled):**
   - Opens the **Add Location** screen with well-spaced translucent sub-panels for the **Location Name** field, read-only **`X`**, **`Y`**, and **`Z`** coordinate fields pre-filled with your current standing block position, and the **Hexagon Color Palette + Live Marker Preview Box** with a random vibrant color pre-selected.
   - Click **`Add`** (or press `Enter`) to save the new waypoint and return to the main list.
@@ -85,4 +95,5 @@ It is designed specifically for players who want clean, readable 3D in-world loc
 ## Support the Project
 
 If you enjoy **Simple Location Marking**, consider supporting development on Ko-fi:
+
 - **Ko-fi:** [https://ko-fi.com/thaistoanf](https://ko-fi.com/thaistoanf)
