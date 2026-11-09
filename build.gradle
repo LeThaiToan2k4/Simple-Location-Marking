@@ -1,0 +1,76 @@
+plugins {
+    id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    // Produces build/libs/simplelocationmarking-fabric-<minecraft_version>-<mod_version>.jar
+    archivesName = "${project.archives_base_name}-fabric-${project.minecraft_version}"
+}
+
+repositories {
+    // Loom adds the Minecraft, Fabric and Mojang repositories automatically.
+}
+
+loom {
+    mods {
+        "simplelocationmarking" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "loader_version", project.loader_version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": inputs.properties.version,
+               "minecraft_version": inputs.properties.minecraft_version,
+               "loader_version": inputs.properties.loader_version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+    inputs.property "archivesName", project.base.archivesName
+
+    from("LICENSE.md") {
+        rename { "${it}_${inputs.properties.archivesName}" }
+    }
+}
+
+remapJar {
+    // Final release artifact in build/libs/
+    archiveFileName = "simplelocationmarking-fabric-${project.minecraft_version}-${project.mod_version}.jar"
+}
+
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifactId = project.archives_base_name
+            from components.java
+        }
+    }
+}

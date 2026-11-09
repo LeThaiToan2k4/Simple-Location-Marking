@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "simplelocationmarking",
+  "version": "${version}",
+  "name": "Simple Location Marking",
+  "description": "A lightweight, client-side location marking (waypoint) mod inspired by the Waypoints feature of Xaero's Minimap. Mark places with a colored hexagon palette, manage them per world, server and dimension with the P key, and see clean 3D markers with distances in-game. No minimap and no teleportation.",
+  "authors": [
+    "thaistoanf"
+  ],
+  "contact": {
+    "homepage": "https://github.com/thaistoanf/Simple-Location-Marking-1.0",
+    "sources": "https://github.com/thaistoanf/Simple-Location-Marking-1.0",
+    "issues": "https://github.com/thaistoanf/Simple-Location-Marking-1.0/issues"
+  },
+  "license": "MIT",
+  "icon": "assets/simplelocationmarking/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.thaistoanf.simplelocationmarking.SimpleLocationMarkingClient"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "simplelocationmarking.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=21"
+  }
+}

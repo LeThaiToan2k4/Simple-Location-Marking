@@ -1,0 +1,39 @@
+# Gradle & Fabric Loom Cache
+.gradle/
+.gradle-test/
+.gradle-user/
+.loom-cache/
+build/
+bin/
+out/
+
+# Minecraft Run Directory & Crash Reports
+run/
+logs/
+crash-reports/
+*.log
+
+# Compiled Java & Packages
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local Environment & Custom Release Folders
+local.properties
+releases/
+
+# IDE & Editor Directories
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+Desktop.ini
