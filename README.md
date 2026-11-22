@@ -3,12 +3,12 @@
   <img src="docs/banner.png" alt="Simple Location Marking Banner" width="100%" />
 
   <h1>Simple Location Marking</h1>
-  <p><strong>Lightweight, High-FPS Client-Side 3D Waypoints for Minecraft Fabric 1.21.11</strong></p>
+  <p><strong>Lightweight, High-FPS Client-Side 3D Waypoints for Minecraft Fabric 1.20.1</strong></p>
 
   <p>
-    <a href="https://minecraft.net/"><img src="https://img.shields.io/badge/Minecraft-1.21.11-2ea44f?style=for-the-badge&logo=mojangstudios&logoColor=white" alt="Minecraft 1.21.11" /></a>
+    <a href="https://minecraft.net/"><img src="https://img.shields.io/badge/Minecraft-1.20.1-2ea44f?style=for-the-badge&logo=mojangstudios&logoColor=white" alt="Minecraft 1.20.1" /></a>
     <a href="https://fabricmc.net/"><img src="https://img.shields.io/badge/Mod_Loader-Fabric-dbd0b4?style=for-the-badge" alt="Fabric" /></a>
-    <a href="https://adoptium.net/"><img src="https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 21" /></a>
+    <a href="https://adoptium.net/"><img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 17" /></a>
     <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License MIT" /></a>
     <a href="https://ko-fi.com/thaistoanf"><img src="https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support on Ko-fi" /></a>
   </p>
@@ -29,7 +29,7 @@
 
 ### Overview
 
-**Simple Location Marking** is a lightweight, client-side location marking mod for Minecraft Fabric `1.21.11`, directly inspired by the **Waypoints** feature of **Xaero's Minimap** and crafted with a sleek **Translucent Dark Glass** UI aesthetic.
+**Simple Location Marking** is a lightweight, client-side location marking mod for Minecraft Fabric `1.20.1`, directly inspired by the **Waypoints** feature of **Xaero's Minimap** and crafted with a sleek **Translucent Dark Glass** UI aesthetic.
 
 Many players love clean, readable 3D in-world waypoint markers, but do not want a heavy radar/minimap overlay on their screen or unfair teleportation commands that break survival progression. **Simple Location Marking** focuses purely on fast, fair-play location marking: mark important coordinates, customize them with an MS Paint-style hexagon color palette and live marker preview, and see crisp, constant-size translucent glass markers in the world with zero FPS impact and strictly **no teleportation features**.
 
@@ -87,9 +87,9 @@ Many players love clean, readable 3D in-world waypoint markers, but do not want 
 
 ### Installation
 
-1. Install **Minecraft `1.21.11`** with **Fabric Loader (`>= 0.19.5`)** and **Java `21`**.
-2. Download and install the latest **Fabric API** for Minecraft `1.21.11`.
-3. Download `simplelocationmarking-fabric-1.21.11-1.0.0.jar` and place it inside your `.minecraft/mods/` folder.
+1. Install **Minecraft `1.20.1`** with **Fabric Loader (`>= 0.20.1`)** and **Java `17`**.
+2. Download and install the latest **Fabric API** for Minecraft `1.20.1`.
+3. Download `simplelocationmarking-fabric-1.20.1-1.0.0.jar` and place it inside your `.minecraft/mods/` folder.
 4. Launch the game and press **`P`** in any world or server to start marking locations.
 
 ---
@@ -108,7 +108,7 @@ Many players love clean, readable 3D in-world waypoint markers, but do not want 
 
 ### Giới Thiệu
 
-**Simple Location Marking** là một bản mod đánh dấu vị trí (waypoint) siêu nhẹ, chạy hoàn toàn phía Client dành cho Minecraft Fabric `1.21.11`, lấy cảm hứng từ chức năng **Waypoints** của **Xaero's Minimap** và được thiết kế theo phong cách giao diện **Kính Tối Trong Suốt (Translucent Dark Glass)** hiện đại.
+**Simple Location Marking** là một bản mod đánh dấu vị trí (waypoint) siêu nhẹ, chạy hoàn toàn phía Client dành cho Minecraft Fabric `1.20.1`, lấy cảm hứng từ chức năng **Waypoints** của **Xaero's Minimap** và được thiết kế theo phong cách giao diện **Kính Tối Trong Suốt (Translucent Dark Glass)** hiện đại.
 
 Rất nhiều người chơi yêu thích kiểu hiển thị cột mốc 3D trực quan trong thế giới nhưng không muốn màn hình bị chiếm diện tích bởi bản đồ thu nhỏ (minimap) hoặc không muốn các tính năng dịch chuyển tức thời (teleport) làm mất tính công bằng khi chơi sinh tồn. **Simple Location Marking** được xây dựng dành riêng cho nhu cầu đó: gọn nhẹ, sắc nét ở mọi khoảng cách, không gây tụt FPS và **hoàn toàn không có tính năng Teleport**.
 
@@ -166,9 +166,9 @@ Rất nhiều người chơi yêu thích kiểu hiển thị cột mốc 3D tr�
 
 ### Cài Đặt
 
-1. Cài đặt **Minecraft `1.21.11`** với **Fabric Loader (`>= 0.19.5`)** và **Java `21`**.
-2. Tải và cài đặt **Fabric API** phù hợp cho phiên bản `1.21.11`.
-3. Copy file `simplelocationmarking-fabric-1.21.11-1.0.0.jar` vào thư mục `.minecraft/mods/`.
+1. Cài đặt **Minecraft `1.20.1`** với **Fabric Loader (`>= 0.20.1`)** và **Java `17`**.
+2. Tải và cài đặt **Fabric API** phù hợp cho phiên bản `1.20.1`.
+3. Copy file `simplelocationmarking-fabric-1.20.1-1.0.0.jar` vào thư mục `.minecraft/mods/`.
 4. Khởi động game và nhấn phím **`P`** để bắt đầu đánh dấu vị trí.
 
 ---

@@ -8,8 +8,6 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
@@ -26,12 +24,15 @@ public final class SimpleLocationMarkingClient implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("Simple Location Marking");
 
     /** Translation key: {@code key.category.simplelocationmarking.main}. */
-    public static final KeyBinding.Category KEY_CATEGORY = KeyBinding.Category.create(id("main"));
+    public static final String KEY_CATEGORY = "key.category.simplelocationmarking.main";
+
+    /** Shared HUD marker renderer invoked before the vanilla crosshair via {@code InGameHudMixin}. */
+    public static final WaypointHudRenderer HUD_RENDERER = new WaypointHudRenderer();
 
     private static KeyBinding openScreenKey;
 
     public static Identifier id(String path) {
-        return Identifier.of(MOD_ID, path);
+        return new Identifier(MOD_ID, path);
     }
 
     @Override
@@ -59,8 +60,6 @@ public final class SimpleLocationMarkingClient implements ClientModInitializer {
                     WaypointManager.onDisconnect();
                     ProjectionState.invalidate();
                 }));
-
-        HudElementRegistry.attachElementBefore(VanillaHudElements.CROSSHAIR, id("waypoints"), new WaypointHudRenderer());
 
         LOGGER.info("Simple Location Marking initialized");
     }

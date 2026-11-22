@@ -1,13 +1,12 @@
 package com.thaistoanf.simplelocationmarking.mixin;
 
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.thaistoanf.simplelocationmarking.render.ProjectionState;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.util.memory.ObjectAllocator;
+import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
-import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,15 +20,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class WorldRendererMixin {
 
     @Inject(
-            method = "render(Lnet/minecraft/client/util/memory/ObjectAllocator;Lnet/minecraft/client/render/RenderTickCounter;ZLnet/minecraft/client/render/Camera;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Vector4f;Z)V",
+            method = "render(Lnet/minecraft/client/util/math/MatrixStack;FJZLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/GameRenderer;Lnet/minecraft/client/render/LightmapTextureManager;Lorg/joml/Matrix4f;)V",
             at = @At("HEAD")
     )
-    private void simplelocationmarking$captureMatrices(ObjectAllocator allocator, RenderTickCounter tickCounter,
+    private void simplelocationmarking$captureMatrices(MatrixStack matrices, float tickDelta, long limitTime,
                                                        boolean renderBlockOutline, Camera camera,
-                                                       Matrix4f positionMatrix, Matrix4f projectionMatrix,
-                                                       Matrix4f cullProjectionMatrix, GpuBufferSlice fogBuffer,
-                                                       Vector4f fogColor, boolean renderSky, CallbackInfo ci) {
-        ProjectionState.capture(positionMatrix, projectionMatrix, camera.getCameraPos());
+                                                       GameRenderer gameRenderer,
+                                                       LightmapTextureManager lightmapTextureManager,
+                                                       Matrix4f projectionMatrix, CallbackInfo ci) {
+        ProjectionState.capture(matrices.peek().getPositionMatrix(), projectionMatrix, camera.getPos());
     }
 }
 

@@ -3,14 +3,12 @@ package com.thaistoanf.simplelocationmarking.render;
 import com.thaistoanf.simplelocationmarking.gui.GlassUi;
 import com.thaistoanf.simplelocationmarking.waypoint.Waypoint;
 import com.thaistoanf.simplelocationmarking.waypoint.WaypointManager;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
-import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -25,7 +23,7 @@ import java.util.List;
  * waypoints several kilometers away (beyond Vanilla's far clip plane) are never clipped and
  * render at the exact same compact screen-space size as nearby waypoints.
  */
-public final class WaypointHudRenderer implements HudElement {
+public final class WaypointHudRenderer {
     /** Crosshair must be within this angle (degrees) of a waypoint to expand it. */
     private static final double HOVER_ANGLE_DEGREES = 3.0;
     private static final float HOVER_COS_THRESHOLD = (float) Math.cos(Math.toRadians(HOVER_ANGLE_DEGREES));
@@ -51,8 +49,7 @@ public final class WaypointHudRenderer implements HudElement {
     private double[] distance = new double[32];
     private int count;
 
-    @Override
-    public void render(DrawContext context, RenderTickCounter tickCounter) {
+    public void render(DrawContext context, float tickDelta) {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayerEntity player = client.player;
         ClientWorld world = client.world;
@@ -83,7 +80,7 @@ public final class WaypointHudRenderer implements HudElement {
         double pz = player.getZ();
 
         TextRenderer textRenderer = client.textRenderer;
-        float step = tickCounter.getDynamicDeltaTicks() * EXPAND_SPEED_PER_TICK;
+        float step = client.getLastFrameDuration() * EXPAND_SPEED_PER_TICK;
 
         // ---- 1. Project normalized direction vectors onto the 2D HUD ----
         count = 0;
@@ -256,14 +253,14 @@ public final class WaypointHudRenderer implements HudElement {
         // Distance label below marker inside a smaller translucent dark pill (0x80000000, scale 0.75f, 0xFFE0E0E0)
         String distanceText = waypoint.distanceText(distanceValue);
         int distanceWidth = waypoint.distanceWidth(textRenderer);
-        Matrix3x2fStack matrices = context.getMatrices();
-        matrices.pushMatrix();
-        matrices.translate(cx, bottom + 3.0f);
-        matrices.scale(DISTANCE_SCALE, DISTANCE_SCALE);
+        MatrixStack matrices = context.getMatrices();
+        matrices.push();
+        matrices.translate(cx, bottom + 3.0f, 0.0f);
+        matrices.scale(DISTANCE_SCALE, DISTANCE_SCALE, 1.0f);
         int dLeft = -distanceWidth / 2;
         context.fill(dLeft - 3, -1, dLeft + distanceWidth + 2, 9, DISTANCE_BACKGROUND);
         context.drawText(textRenderer, distanceText, dLeft, 0, DISTANCE_COLOR, true);
-        matrices.popMatrix();
+        matrices.pop();
     }
 
     private void ensureCapacity(int required) {

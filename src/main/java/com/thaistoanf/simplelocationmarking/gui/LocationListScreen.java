@@ -3,11 +3,9 @@ package com.thaistoanf.simplelocationmarking.gui;
 import com.thaistoanf.simplelocationmarking.util.DimensionNames;
 import com.thaistoanf.simplelocationmarking.waypoint.Waypoint;
 import com.thaistoanf.simplelocationmarking.waypoint.WaypointManager;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvents;
@@ -204,13 +202,14 @@ public final class LocationListScreen extends Screen {
     // ------------------------------------------------------------------------------------------
 
     @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderBackground(DrawContext context) {
         // Subtle dark translucent full-screen overlay over the live game world (no blur or dirt background)
         GlassUi.drawScreenBackdrop(context, this.width, this.height);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        this.renderBackground(context);
         int centerX = this.width / 2;
 
         // 1. Centered Translucent Glass Main Panel + Top Header Bar
@@ -429,26 +428,23 @@ public final class LocationListScreen extends Screen {
     // ------------------------------------------------------------------------------------------
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         if (maxScroll() > 0 && mouseX >= listLeft && mouseX <= listRight && mouseY >= listTop && mouseY <= listBottom) {
-            scrollOffset -= verticalAmount * (ROW_HEIGHT * 1.25);
+            scrollOffset -= amount * (ROW_HEIGHT * 1.25);
             clampScroll();
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        return super.mouseScrolled(mouseX, mouseY, amount);
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (super.mouseClicked(click, doubled)) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (super.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
-        if (click.button() != 0) {
+        if (button != 0) {
             return false;
         }
-
-        double mouseX = click.x();
-        double mouseY = click.y();
 
         // Check scrollbar click
         if (maxScroll() > 0) {
@@ -474,14 +470,14 @@ public final class LocationListScreen extends Screen {
             if (clickedIndex >= 0 && clickedIndex < dimensionWaypoints.size()) {
                 Waypoint clicked = dimensionWaypoints.get(clickedIndex);
                 long now = System.currentTimeMillis();
-                boolean isDoubleClick = doubled || (clicked == lastClickedWaypoint && (now - lastClickTimeMs) < 300L);
+                boolean isDoubleClick = clicked == lastClickedWaypoint && (now - lastClickTimeMs) < 300L;
                 lastClickedWaypoint = clicked;
                 lastClickTimeMs = now;
 
                 selected = clicked;
                 updateButtonStates();
                 if (client != null) {
-                    client.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+                    client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f));
                 }
                 if (isDoubleClick) {
                     openEditScreen();
@@ -494,21 +490,21 @@ public final class LocationListScreen extends Screen {
     }
 
     @Override
-    public boolean mouseDragged(Click click, double offsetX, double offsetY) {
-        if (draggingScrollbar && click.button() == 0) {
-            updateScrollFromMouse(click.y());
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (draggingScrollbar && button == 0) {
+            updateScrollFromMouse(mouseY);
             return true;
         }
-        return super.mouseDragged(click, offsetX, offsetY);
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     @Override
-    public boolean mouseReleased(Click click) {
-        if (click.button() == 0 && draggingScrollbar) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0 && draggingScrollbar) {
             draggingScrollbar = false;
             return true;
         }
-        return super.mouseReleased(click);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     private void updateScrollFromMouse(double mouseY) {
@@ -526,15 +522,14 @@ public final class LocationListScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(KeyInput input) {
-        int key = input.getKeycode();
-        if (key == GLFW.GLFW_KEY_DELETE && selected != null) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_DELETE && selected != null) {
             deleteSelected();
             return true;
         }
-        if ((key == GLFW.GLFW_KEY_UP || key == GLFW.GLFW_KEY_DOWN) && !dimensionWaypoints.isEmpty()) {
+        if ((keyCode == GLFW.GLFW_KEY_UP || keyCode == GLFW.GLFW_KEY_DOWN) && !dimensionWaypoints.isEmpty()) {
             int idx = selected != null ? dimensionWaypoints.indexOf(selected) : -1;
-            if (key == GLFW.GLFW_KEY_UP) {
+            if (keyCode == GLFW.GLFW_KEY_UP) {
                 idx = idx <= 0 ? 0 : idx - 1;
             } else {
                 idx = idx < 0 ? 0 : Math.min(dimensionWaypoints.size() - 1, idx + 1);
@@ -544,7 +539,7 @@ public final class LocationListScreen extends Screen {
             updateButtonStates();
             return true;
         }
-        return super.keyPressed(input);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     private void ensureVisible(int rowIndex) {

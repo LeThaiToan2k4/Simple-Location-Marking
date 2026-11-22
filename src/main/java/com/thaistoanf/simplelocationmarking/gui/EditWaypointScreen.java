@@ -3,12 +3,10 @@ package com.thaistoanf.simplelocationmarking.gui;
 import com.thaistoanf.simplelocationmarking.gui.widget.HexColorPalette;
 import com.thaistoanf.simplelocationmarking.waypoint.Waypoint;
 import com.thaistoanf.simplelocationmarking.waypoint.WaypointManager;
-import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -267,12 +265,13 @@ public final class EditWaypointScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderBackground(DrawContext context) {
         GlassUi.drawScreenBackdrop(context, this.width, this.height);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        this.renderBackground(context);
         int centerX = this.width / 2;
         int innerLeft = subLeft + 8;
 
@@ -356,24 +355,23 @@ public final class EditWaypointScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (palette.mouseClicked(click.x(), click.y(), click.button())) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (palette.mouseClicked(mouseX, mouseY, button)) {
             if (client != null) {
-                client.getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.UI_BUTTON_CLICK, 1.2f));
+                client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.2f));
             }
             return true;
         }
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean keyPressed(KeyInput input) {
-        int key = input.getKeycode();
-        if ((key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) && submitButton != null && submitButton.active) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && submitButton != null && submitButton.active) {
             submitAndClose();
             return true;
         }
-        return super.keyPressed(input);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override

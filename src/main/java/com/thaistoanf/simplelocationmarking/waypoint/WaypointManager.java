@@ -94,7 +94,7 @@ public final class WaypointManager {
         }
         ServerInfo entry = client.getCurrentServerEntry();
         if (entry != null && entry.address != null && !entry.address.isBlank()) {
-            String prefix = entry.isRealm() ? "realms_" : "multiplayer_";
+            String prefix = client.isConnectedToRealms() ? "realms_" : "multiplayer_";
             return prefix + sanitizeFileName(entry.address.trim().toLowerCase(Locale.ROOT));
         }
         return "unknown_session";
