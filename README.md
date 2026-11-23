@@ -3,10 +3,10 @@
   <img src="docs/banner.png" alt="Simple Location Marking Banner" width="100%" />
 
   <h1>Simple Location Marking</h1>
-  <p><strong>Lightweight, High-FPS Client-Side 3D Waypoints for Minecraft Fabric 1.20.3</strong></p>
+  <p><strong>Lightweight, High-FPS Client-Side 3D Waypoints for Minecraft Fabric 1.20.4</strong></p>
 
   <p>
-    <a href="https://minecraft.net/"><img src="https://img.shields.io/badge/Minecraft-1.20.3-2ea44f?style=for-the-badge&logo=mojangstudios&logoColor=white" alt="Minecraft 1.20.3" /></a>
+    <a href="https://minecraft.net/"><img src="https://img.shields.io/badge/Minecraft-1.20.4-2ea44f?style=for-the-badge&logo=mojangstudios&logoColor=white" alt="Minecraft 1.20.4" /></a>
     <a href="https://fabricmc.net/"><img src="https://img.shields.io/badge/Mod_Loader-Fabric-dbd0b4?style=for-the-badge" alt="Fabric" /></a>
     <a href="https://adoptium.net/"><img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 17" /></a>
     <a href="LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License MIT" /></a>
@@ -29,7 +29,7 @@
 
 ### Overview
 
-**Simple Location Marking** is a lightweight, client-side location marking mod for Minecraft Fabric `1.20.3`, directly inspired by the **Waypoints** feature of **Xaero's Minimap** and crafted with a sleek **Translucent Dark Glass** UI aesthetic.
+**Simple Location Marking** is a lightweight, client-side location marking mod for Minecraft Fabric `1.20.4`, directly inspired by the **Waypoints** feature of **Xaero's Minimap** and crafted with a sleek **Translucent Dark Glass** UI aesthetic.
 
 Many players love clean, readable 3D in-world waypoint markers, but do not want a heavy radar/minimap overlay on their screen or unfair teleportation commands that break survival progression. **Simple Location Marking** focuses purely on fast, fair-play location marking: mark important coordinates, customize them with an MS Paint-style hexagon color palette and live marker preview, and see crisp, constant-size translucent glass markers in the world with zero FPS impact and strictly **no teleportation features**.
 
@@ -65,6 +65,7 @@ Many players love clean, readable 3D in-world waypoint markers, but do not want 
 ### Controls & GUI Guide
 
 #### 1. Opening the Management Screen (`P` Key)
+
 - Press **`P`** in-game (configurable in **Options -> Controls -> Key Binds** under category **Simple Location Marking**) to open the **Location Management Screen**.
 - **Header Info Bar:** Displays your current **Dimension** inside an accent-colored pill badge (emerald green for `Overworld`, crimson for `Nether`, purple for `The End`) alongside a pill badge showing your standing **Coordinates (`X, Y, Z`)**.
 - **Scrollable Waypoint List:** Renders inside a recessed dark translucent viewport (`0x880B0C10`) with a slim `4px` semi-transparent scrollbar. Each waypoint row is styled as an interactive card displaying:
@@ -72,6 +73,7 @@ Many players love clean, readable 3D in-world waypoint markers, but do not want 
   - Supports mouse-wheel scrolling, scrollbar dragging, up/down arrow navigation, single-click selection, and double-click to edit.
 
 #### 2. Bottom Action Buttons
+
 - **`Add` (Always Enabled):** Opens the **Add Location** screen.
   - Organized into recessed translucent sub-panels for the **Location Name** input, read-only standing **`X`**, **`Y`**, and **`Z`** coordinate fields, and the **Hexagon Color Palette + Live Marker Preview Box**.
   - A random vibrant color is pre-selected on the **Hexagon Color Palette**; click any hexagon cell to pick a different color and watch the **Live Preview Box** update immediately, then click **`Add`** (or press `Enter`) to save.
@@ -87,9 +89,9 @@ Many players love clean, readable 3D in-world waypoint markers, but do not want 
 
 ### Installation
 
-1. Install **Minecraft `1.20.3`** with **Fabric Loader (`>= 0.20.1`)** and **Java `17`**.
-2. Download and install the latest **Fabric API** for Minecraft `1.20.3`.
-3. Download `simplelocationmarking-fabric-1.20.3-1.0.0.jar` and place it inside your `.minecraft/mods/` folder.
+1. Install **Minecraft `1.20.4`** with **Fabric Loader (`>= 0.20.1`)** and **Java `17`**.
+2. Download and install the latest **Fabric API** for Minecraft `1.20.4`.
+3. Download `simplelocationmarking-fabric-1.20.4-1.0.0.jar` and place it inside your `.minecraft/mods/` folder.
 4. Launch the game and press **`P`** in any world or server to start marking locations.
 
 ---
@@ -100,7 +102,6 @@ Many players love clean, readable 3D in-world waypoint markers, but do not want 
 - **Data Path:** `.minecraft/config/simplelocationmarking/`
 
 ---
----
 
 <a id="tai-lieu-tieng-viet"></a>
 
@@ -108,7 +109,7 @@ Many players love clean, readable 3D in-world waypoint markers, but do not want 
 
 ### Giới Thiệu
 
-**Simple Location Marking** là một bản mod đánh dấu vị trí (waypoint) siêu nhẹ, chạy hoàn toàn phía Client dành cho Minecraft Fabric `1.20.3`, lấy cảm hứng từ chức năng **Waypoints** của **Xaero's Minimap** và được thiết kế theo phong cách giao diện **Kính Tối Trong Suốt (Translucent Dark Glass)** hiện đại.
+**Simple Location Marking** là một bản mod đánh dấu vị trí (waypoint) siêu nhẹ, chạy hoàn toàn phía Client dành cho Minecraft Fabric `1.20.4`, lấy cảm hứng từ chức năng **Waypoints** của **Xaero's Minimap** và được thiết kế theo phong cách giao diện **Kính Tối Trong Suốt (Translucent Dark Glass)** hiện đại.
 
 Rất nhiều người chơi yêu thích kiểu hiển thị cột mốc 3D trực quan trong thế giới nhưng không muốn màn hình bị chiếm diện tích bởi bản đồ thu nhỏ (minimap) hoặc không muốn các tính năng dịch chuyển tức thời (teleport) làm mất tính công bằng khi chơi sinh tồn. **Simple Location Marking** được xây dựng dành riêng cho nhu cầu đó: gọn nhẹ, sắc nét ở mọi khoảng cách, không gây tụt FPS và **hoàn toàn không có tính năng Teleport**.
 
@@ -144,6 +145,7 @@ Rất nhiều người chơi yêu thích kiểu hiển thị cột mốc 3D tr�
 ### Hướng Dẫn Thao Tác Phím `P`
 
 #### 1. Mở Giao Diện Quản Lý (Phím `P`)
+
 - Nhấn phím **`P`** khi đang trong game (có thể đổi phím tắt trong **Options -> Controls -> Key Binds** tại danh mục **Simple Location Marking**) để mở **Giao Diện Quản Lý Vị Trí Đánh Dấu**.
 - **Thanh Thông Tin Đầu Trang:** Hiển thị huy hiệu **Chiều không gian** với màu sắc đặc trưng (xanh ngọc lục bảo cho `Overworld`, đỏ thẫm cho `Nether`, tím cho `The End`) cùng huy hiệu **Tọa độ đang đứng (`X, Y, Z`)**.
 - **Danh Sách Vị Trí Dạng Thẻ (Card Rows):** Nằm trong khung nền tối (`0x880B0C10`) với thanh cuộn mảnh `4px` bán trong suốt. Mỗi dòng là một thẻ hiển thị:
@@ -151,6 +153,7 @@ Rất nhiều người chơi yêu thích kiểu hiển thị cột mốc 3D tr�
   - Hỗ trợ lăn chuột, kéo thanh cuộn, phím mũi tên Lên/Xuống, nhấp chuột để chọn, hoặc nhấp đúp chuột để mở nhanh giao diện Chỉnh sửa.
 
 #### 2. Các Nút Chức Năng Bên Dưới
+
 - **`Add` / `Thêm` (Luôn Bật):** Mở giao diện **Thêm Vị Trí Đánh Dấu**.
   - Các khu vực nhập **Tên vị trí**, tọa độ chỉ đọc **`X`**, **`Y`**, **`Z`**, và **Bảng màu lục giác + Khung Xem Trước** được bố trí trong các khung kính phụ gọn gàng.
   - Một màu ngẫu nhiên trên **Bảng màu lục giác** sẽ được chọn sẵn; nhấp vào bất kỳ ô lục giác nào để đổi màu và quan sát khung **Xem trước** cập nhật tức thì, sau đó nhấn **`Add` / `Thêm`** (hoặc phím `Enter`) để lưu.
@@ -166,9 +169,9 @@ Rất nhiều người chơi yêu thích kiểu hiển thị cột mốc 3D tr�
 
 ### Cài Đặt
 
-1. Cài đặt **Minecraft `1.20.3`** với **Fabric Loader (`>= 0.20.1`)** và **Java `17`**.
-2. Tải và cài đặt **Fabric API** phù hợp cho phiên bản `1.20.3`.
-3. Copy file `simplelocationmarking-fabric-1.20.3-1.0.0.jar` vào thư mục `.minecraft/mods/`.
+1. Cài đặt **Minecraft `1.20.4`** với **Fabric Loader (`>= 0.20.1`)** và **Java `17`**.
+2. Tải và cài đặt **Fabric API** phù hợp cho phiên bản `1.20.4`.
+3. Copy file `simplelocationmarking-fabric-1.20.4-1.0.0.jar` vào thư mục `.minecraft/mods/`.
 4. Khởi động game và nhấn phím **`P`** để bắt đầu đánh dấu vị trí.
 
 ---
@@ -176,4 +179,6 @@ Rất nhiều người chơi yêu thích kiểu hiển thị cột mốc 3D tr�
 ### Ủng Hộ Tác Giả (Support the Author)
 
 Nếu bạn thấy mod hữu ích, hãy ủng hộ tác giả **thaistoanf** qua Ko-fi:
+
 - **Ko-fi:** [https://ko-fi.com/thaistoanf](https://ko-fi.com/thaistoanf)
+
