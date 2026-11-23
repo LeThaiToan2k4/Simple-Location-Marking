@@ -202,25 +202,24 @@ public final class LocationListScreen extends Screen {
     // ------------------------------------------------------------------------------------------
 
     @Override
-    public void renderBackground(DrawContext context) {
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
         // Subtle dark translucent full-screen overlay over the live game world (no blur or dirt background)
         GlassUi.drawScreenBackdrop(context, this.width, this.height);
+        // 1. Centered Translucent Glass Main Panel + Top Header Bar
+        GlassUi.drawMainPanel(context, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
+        // 2. Recessed Scrollable Waypoint List Viewport (0x880B0C10)
+        GlassUi.drawSubPanel(context, listLeft, listTop, listRight, listBottom);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
+        // Renders background chrome first, followed by action buttons
+        super.render(context, mouseX, mouseY, delta);
         int centerX = this.width / 2;
 
-        // 1. Centered Translucent Glass Main Panel + Top Header Bar
-        GlassUi.drawMainPanel(context, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
-
-        // 2. Header Title & Dimension / Coordinates Pill Badges
+        // Header Title & Dimension / Coordinates Pill Badges
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, centerX, panelTop + 6, 0xFFFFFFFF);
         renderHeaderPills(context, centerX, panelTop + 21);
-
-        // 3. Recessed Scrollable Waypoint List Viewport (0x880B0C10)
-        GlassUi.drawSubPanel(context, listLeft, listTop, listRight, listBottom);
 
         if (dimensionWaypoints.isEmpty()) {
             Text emptyText = Text.translatable("simplelocationmarking.screen.list.empty");
@@ -235,9 +234,6 @@ public final class LocationListScreen extends Screen {
             renderRows(context, mouseX, mouseY);
             renderScrollbar(context, mouseX, mouseY);
         }
-
-        // 4. Action Buttons
-        super.render(context, mouseX, mouseY, delta);
     }
 
     private void renderHeaderPills(DrawContext context, int centerX, int pillTop) {
@@ -428,13 +424,13 @@ public final class LocationListScreen extends Screen {
     // ------------------------------------------------------------------------------------------
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (maxScroll() > 0 && mouseX >= listLeft && mouseX <= listRight && mouseY >= listTop && mouseY <= listBottom) {
-            scrollOffset -= amount * (ROW_HEIGHT * 1.25);
+            scrollOffset -= verticalAmount * (ROW_HEIGHT * 1.25);
             clampScroll();
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, amount);
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     @Override

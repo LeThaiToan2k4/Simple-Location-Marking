@@ -222,22 +222,24 @@ public final class AddWaypointScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(DrawContext context) {
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
         GlassUi.drawScreenBackdrop(context, this.width, this.height);
+        GlassUi.drawMainPanel(context, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
+        GlassUi.drawSubPanel(context, subLeft, namePanelTop, subRight, namePanelBottom);
+        GlassUi.drawSubPanel(context, subLeft, coordsPanelTop, subRight, coordsPanelBottom);
+        GlassUi.drawSubPanel(context, subLeft, colorPanelTop, subRight, colorPanelBottom);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
+        super.render(context, mouseX, mouseY, delta);
         int centerX = this.width / 2;
         int innerLeft = subLeft + 8;
 
-        // 1. Main Translucent Glass Panel + Header Bar
-        GlassUi.drawMainPanel(context, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
+        // 1. Header Title
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, centerX, panelTop + 8, 0xFFFFFFFF);
 
-        // 2. Name Sub-Panel
-        GlassUi.drawSubPanel(context, subLeft, namePanelTop, subRight, namePanelBottom);
+        // 2. Name Sub-Panel Label
         context.drawTextWithShadow(
                 this.textRenderer,
                 Text.translatable("simplelocationmarking.field.name"),
@@ -245,8 +247,7 @@ public final class AddWaypointScreen extends Screen {
                 namePanelTop + 4,
                 0xFFD0D8EC);
 
-        // 3. Coordinates Sub-Panel
-        GlassUi.drawSubPanel(context, subLeft, coordsPanelTop, subRight, coordsPanelBottom);
+        // 3. Coordinates Sub-Panel Labels
         context.drawTextWithShadow(
                 this.textRenderer,
                 Text.translatable("simplelocationmarking.field.coordinates_readonly"),
@@ -261,8 +262,7 @@ public final class AddWaypointScreen extends Screen {
         context.drawTextWithShadow(this.textRenderer, Text.translatable("simplelocationmarking.field.z"),
                 zField.getX() - 10, prefixY, 0xFF80B8FF);
 
-        // 4. Color Palette & Live Preview Sub-Panel
-        GlassUi.drawSubPanel(context, subLeft, colorPanelTop, subRight, colorPanelBottom);
+        // 4. Color Palette & Live Preview Sub-Panel Content
         context.drawTextWithShadow(
                 this.textRenderer,
                 Text.translatable("simplelocationmarking.field.color"),
@@ -275,8 +275,6 @@ public final class AddWaypointScreen extends Screen {
 
         // Live Color & Marker Preview Box on the right side of the color sub-panel
         renderPreviewBox(context);
-
-        super.render(context, mouseX, mouseY, delta);
     }
 
     private void renderPreviewBox(DrawContext context) {

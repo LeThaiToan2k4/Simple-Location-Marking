@@ -26,10 +26,13 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Loads and saves waypoints in {@code .minecraft/config/simplelocationmarking/}.
+ * Loads and saves waypoints in
+ * {@code .minecraft/config/simplelocationmarking/}.
  * <p>
- * One JSON file is used per singleplayer world folder or per multiplayer server address, so
- * waypoints never leak between worlds or servers. All methods must be called on the client thread.
+ * One JSON file is used per singleplayer world folder or per multiplayer server
+ * address, so
+ * waypoints never leak between worlds or servers. All methods must be called on
+ * the client thread.
  */
 public final class WaypointManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -77,7 +80,10 @@ public final class WaypointManager {
         cachedDimensionKey = null;
     }
 
-    /** Lazily loads the storage file if a world is active but no join event was observed yet. */
+    /**
+     * Lazily loads the storage file if a world is active but no join event was
+     * observed yet.
+     */
     public static void ensureLoaded(MinecraftClient client) {
         if (currentKey == null && client.world != null) {
             load(computeStorageKey(client));
@@ -94,7 +100,7 @@ public final class WaypointManager {
         }
         ServerInfo entry = client.getCurrentServerEntry();
         if (entry != null && entry.address != null && !entry.address.isBlank()) {
-            String prefix = client.isConnectedToRealms() ? "realms_" : "multiplayer_";
+            String prefix = entry.isRealm() ? "realms_" : "multiplayer_";
             return prefix + sanitizeFileName(entry.address.trim().toLowerCase(Locale.ROOT));
         }
         return "unknown_session";
@@ -143,7 +149,8 @@ public final class WaypointManager {
                     }
                 }
             }
-            SimpleLocationMarkingClient.LOGGER.info("Loaded {} waypoints from {}", WAYPOINTS.size(), currentFile.getFileName());
+            SimpleLocationMarkingClient.LOGGER.info("Loaded {} waypoints from {}", WAYPOINTS.size(),
+                    currentFile.getFileName());
         } catch (IOException | JsonParseException e) {
             SimpleLocationMarkingClient.LOGGER.error("Failed to read waypoint file {}", currentFile, e);
         }
@@ -175,12 +182,18 @@ public final class WaypointManager {
     // Queries and mutations
     // ------------------------------------------------------------------------------------------
 
-    /** All waypoints of the active world or server (every dimension). Read-only view. */
+    /**
+     * All waypoints of the active world or server (every dimension). Read-only
+     * view.
+     */
     public static List<Waypoint> all() {
         return WAYPOINTS_VIEW;
     }
 
-    /** Fills {@code out} with the waypoints of the given dimension, without allocating. */
+    /**
+     * Fills {@code out} with the waypoints of the given dimension, without
+     * allocating.
+     */
     public static void collectForDimension(String dimensionId, List<Waypoint> out) {
         out.clear();
         for (int i = 0, n = WAYPOINTS.size(); i < n; i++) {
@@ -212,7 +225,10 @@ public final class WaypointManager {
         save();
     }
 
-    /** Returns the identifier string of the world's dimension, cached per dimension key. */
+    /**
+     * Returns the identifier string of the world's dimension, cached per dimension
+     * key.
+     */
     public static String dimensionId(World world) {
         RegistryKey<World> key = world.getRegistryKey();
         if (key != cachedDimensionKey) {
@@ -222,4 +238,3 @@ public final class WaypointManager {
         return cachedDimensionId;
     }
 }
-
