@@ -24,7 +24,7 @@ public final class SimpleLocationMarkingClient implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("Simple Location Marking");
 
     /** Translation key: {@code key.category.simplelocationmarking.main}. */
-    public static final String KEY_CATEGORY = "key.category.simplelocationmarking.main";
+    public static final KeyBinding.Category KEY_CATEGORY = KeyBinding.Category.create(id("main"));
 
     /** Shared HUD marker renderer invoked before the vanilla crosshair via {@code InGameHudMixin}. */
     public static final WaypointHudRenderer HUD_RENDERER = new WaypointHudRenderer();

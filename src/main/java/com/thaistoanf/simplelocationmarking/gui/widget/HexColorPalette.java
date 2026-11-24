@@ -214,7 +214,7 @@ public final class HexColorPalette {
     public void render(DrawContext context, int mouseX, int mouseY) {
         hoveredIndex = cellAt(mouseX, mouseY);
 
-        int scale = Math.max(1, (int) Math.round(MinecraftClient.getInstance().getWindow().getScaleFactor()));
+        int scale = Math.max(1, MinecraftClient.getInstance().getWindow().getScaleFactor());
         float f = scale;
 
         Matrix3x2fStack matrices = context.getMatrices();

@@ -21,13 +21,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class WorldRendererMixin {
 
     @Inject(
-            method = "render(Lnet/minecraft/client/util/ObjectAllocator;Lnet/minecraft/client/render/RenderTickCounter;ZLnet/minecraft/client/render/Camera;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Vector4f;Z)V",
+            method = "render(Lnet/minecraft/client/util/ObjectAllocator;Lnet/minecraft/client/render/RenderTickCounter;ZLnet/minecraft/client/render/Camera;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;Lorg/joml/Vector4f;Z)V",
             at = @At("HEAD")
     )
     private void simplelocationmarking$captureMatrices(ObjectAllocator allocator,
                                                        RenderTickCounter tickCounter,
                                                        boolean renderBlockOutline, Camera camera,
                                                        Matrix4f positionMatrix, Matrix4f projectionMatrix,
+                                                       Matrix4f cullProjectionMatrix,
                                                        GpuBufferSlice fogBuffer, Vector4f fogColor,
                                                        boolean renderSky, CallbackInfo ci) {
         ProjectionState.capture(positionMatrix, projectionMatrix, camera.getPos());

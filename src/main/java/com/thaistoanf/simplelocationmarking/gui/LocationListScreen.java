@@ -3,9 +3,11 @@ package com.thaistoanf.simplelocationmarking.gui;
 import com.thaistoanf.simplelocationmarking.util.DimensionNames;
 import com.thaistoanf.simplelocationmarking.waypoint.Waypoint;
 import com.thaistoanf.simplelocationmarking.waypoint.WaypointManager;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvents;
@@ -205,21 +207,21 @@ public final class LocationListScreen extends Screen {
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
         // Subtle dark translucent full-screen overlay over the live game world (no blur or dirt background)
         GlassUi.drawScreenBackdrop(context, this.width, this.height);
-        // 1. Centered Translucent Glass Main Panel + Top Header Bar
-        GlassUi.drawMainPanel(context, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
-        // 2. Recessed Scrollable Waypoint List Viewport (0x880B0C10)
-        GlassUi.drawSubPanel(context, listLeft, listTop, listRight, listBottom);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // Renders background chrome first, followed by action buttons
-        super.render(context, mouseX, mouseY, delta);
         int centerX = this.width / 2;
 
-        // Header Title & Dimension / Coordinates Pill Badges
+        // 1. Centered Translucent Glass Main Panel + Top Header Bar
+        GlassUi.drawMainPanel(context, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
+
+        // 2. Header Title & Dimension / Coordinates Pill Badges
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, centerX, panelTop + 6, 0xFFFFFFFF);
         renderHeaderPills(context, centerX, panelTop + 21);
+
+        // 3. Recessed Scrollable Waypoint List Viewport (0x880B0C10)
+        GlassUi.drawSubPanel(context, listLeft, listTop, listRight, listBottom);
 
         if (dimensionWaypoints.isEmpty()) {
             Text emptyText = Text.translatable("simplelocationmarking.screen.list.empty");
@@ -234,6 +236,9 @@ public final class LocationListScreen extends Screen {
             renderRows(context, mouseX, mouseY);
             renderScrollbar(context, mouseX, mouseY);
         }
+
+        // 4. Action Buttons
+        super.render(context, mouseX, mouseY, delta);
     }
 
     private void renderHeaderPills(DrawContext context, int centerX, int pillTop) {
@@ -434,13 +439,16 @@ public final class LocationListScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (super.mouseClicked(mouseX, mouseY, button)) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if (super.mouseClicked(click, doubled)) {
             return true;
         }
-        if (button != 0) {
+        if (click.button() != 0) {
             return false;
         }
+
+        double mouseX = click.x();
+        double mouseY = click.y();
 
         // Check scrollbar click
         if (maxScroll() > 0) {
@@ -466,7 +474,7 @@ public final class LocationListScreen extends Screen {
             if (clickedIndex >= 0 && clickedIndex < dimensionWaypoints.size()) {
                 Waypoint clicked = dimensionWaypoints.get(clickedIndex);
                 long now = System.currentTimeMillis();
-                boolean isDoubleClick = clicked == lastClickedWaypoint && (now - lastClickTimeMs) < 300L;
+                boolean isDoubleClick = doubled || (clicked == lastClickedWaypoint && (now - lastClickTimeMs) < 300L);
                 lastClickedWaypoint = clicked;
                 lastClickTimeMs = now;
 
@@ -486,21 +494,21 @@ public final class LocationListScreen extends Screen {
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (draggingScrollbar && button == 0) {
-            updateScrollFromMouse(mouseY);
+    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
+        if (draggingScrollbar && click.button() == 0) {
+            updateScrollFromMouse(click.y());
             return true;
         }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return super.mouseDragged(click, deltaX, deltaY);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0 && draggingScrollbar) {
+    public boolean mouseReleased(Click click) {
+        if (click.button() == 0 && draggingScrollbar) {
             draggingScrollbar = false;
             return true;
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
     private void updateScrollFromMouse(double mouseY) {
@@ -518,7 +526,8 @@ public final class LocationListScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyInput input) {
+        int keyCode = input.getKeycode();
         if (keyCode == GLFW.GLFW_KEY_DELETE && selected != null) {
             deleteSelected();
             return true;
@@ -535,7 +544,7 @@ public final class LocationListScreen extends Screen {
             updateButtonStates();
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(input);
     }
 
     private void ensureVisible(int rowIndex) {

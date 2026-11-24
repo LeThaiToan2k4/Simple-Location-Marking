@@ -3,10 +3,12 @@ package com.thaistoanf.simplelocationmarking.gui;
 import com.thaistoanf.simplelocationmarking.gui.widget.HexColorPalette;
 import com.thaistoanf.simplelocationmarking.waypoint.Waypoint;
 import com.thaistoanf.simplelocationmarking.waypoint.WaypointManager;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -224,22 +226,19 @@ public final class AddWaypointScreen extends Screen {
     @Override
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
         GlassUi.drawScreenBackdrop(context, this.width, this.height);
-        GlassUi.drawMainPanel(context, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
-        GlassUi.drawSubPanel(context, subLeft, namePanelTop, subRight, namePanelBottom);
-        GlassUi.drawSubPanel(context, subLeft, coordsPanelTop, subRight, coordsPanelBottom);
-        GlassUi.drawSubPanel(context, subLeft, colorPanelTop, subRight, colorPanelBottom);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
         int centerX = this.width / 2;
         int innerLeft = subLeft + 8;
 
-        // 1. Header Title
+        // 1. Main Translucent Glass Panel + Header Bar
+        GlassUi.drawMainPanel(context, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, centerX, panelTop + 8, 0xFFFFFFFF);
 
-        // 2. Name Sub-Panel Label
+        // 2. Name Sub-Panel
+        GlassUi.drawSubPanel(context, subLeft, namePanelTop, subRight, namePanelBottom);
         context.drawTextWithShadow(
                 this.textRenderer,
                 Text.translatable("simplelocationmarking.field.name"),
@@ -247,7 +246,8 @@ public final class AddWaypointScreen extends Screen {
                 namePanelTop + 4,
                 0xFFD0D8EC);
 
-        // 3. Coordinates Sub-Panel Labels
+        // 3. Coordinates Sub-Panel
+        GlassUi.drawSubPanel(context, subLeft, coordsPanelTop, subRight, coordsPanelBottom);
         context.drawTextWithShadow(
                 this.textRenderer,
                 Text.translatable("simplelocationmarking.field.coordinates_readonly"),
@@ -262,7 +262,8 @@ public final class AddWaypointScreen extends Screen {
         context.drawTextWithShadow(this.textRenderer, Text.translatable("simplelocationmarking.field.z"),
                 zField.getX() - 10, prefixY, 0xFF80B8FF);
 
-        // 4. Color Palette & Live Preview Sub-Panel Content
+        // 4. Color Palette & Live Preview Sub-Panel
+        GlassUi.drawSubPanel(context, subLeft, colorPanelTop, subRight, colorPanelBottom);
         context.drawTextWithShadow(
                 this.textRenderer,
                 Text.translatable("simplelocationmarking.field.color"),
@@ -275,6 +276,8 @@ public final class AddWaypointScreen extends Screen {
 
         // Live Color & Marker Preview Box on the right side of the color sub-panel
         renderPreviewBox(context);
+
+        super.render(context, mouseX, mouseY, delta);
     }
 
     private void renderPreviewBox(DrawContext context) {
@@ -309,24 +312,25 @@ public final class AddWaypointScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (palette.mouseClicked(mouseX, mouseY, button)) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if (palette.mouseClicked(click.x(), click.y(), click.button())) {
             if (client != null) {
                 client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.2f));
             }
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyInput input) {
+        int keyCode = input.getKeycode();
         if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && addButton != null
                 && addButton.active) {
             saveAndClose();
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(input);
     }
 
     @Override
