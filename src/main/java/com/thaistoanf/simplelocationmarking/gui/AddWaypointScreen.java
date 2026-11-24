@@ -1,5 +1,6 @@
 package com.thaistoanf.simplelocationmarking.gui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.thaistoanf.simplelocationmarking.gui.widget.HexColorPalette;
 import com.thaistoanf.simplelocationmarking.util.TextUtil;
 import com.thaistoanf.simplelocationmarking.waypoint.Waypoint;
@@ -20,7 +21,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.Locale;
 import java.util.Random;
@@ -348,7 +348,7 @@ public final class AddWaypointScreen extends Screen {
     public boolean keyPressed(@NonNull KeyEvent event) {
         int keyCode = event.key();
         Button btn = addButton;
-        if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && btn != null && btn.active) {
+        if ((keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER) && btn != null && btn.active) {
             saveAndClose();
             return true;
         }

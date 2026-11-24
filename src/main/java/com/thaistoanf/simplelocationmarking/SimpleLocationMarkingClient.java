@@ -15,7 +15,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +36,7 @@ public final class SimpleLocationMarkingClient implements ClientModInitializer {
     public void onInitializeClient() {
         KeyMapping openScreenKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.simplelocationmarking.open",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_P,
+                InputConstants.KEY_P,
                 KEY_CATEGORY
         ));
 

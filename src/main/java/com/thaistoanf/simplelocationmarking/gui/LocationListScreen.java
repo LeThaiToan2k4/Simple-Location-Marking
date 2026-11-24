@@ -1,5 +1,6 @@
 package com.thaistoanf.simplelocationmarking.gui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.thaistoanf.simplelocationmarking.util.DimensionNames;
 import com.thaistoanf.simplelocationmarking.waypoint.Waypoint;
 import com.thaistoanf.simplelocationmarking.waypoint.WaypointManager;
@@ -17,7 +18,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -536,13 +536,13 @@ public final class LocationListScreen extends Screen {
     @Override
     public boolean keyPressed(@NonNull KeyEvent event) {
         int keyCode = event.key();
-        if (keyCode == GLFW.GLFW_KEY_DELETE && selected != null) {
+        if (keyCode == InputConstants.KEY_DELETE && selected != null) {
             deleteSelected();
             return true;
         }
-        if ((keyCode == GLFW.GLFW_KEY_UP || keyCode == GLFW.GLFW_KEY_DOWN) && !dimensionWaypoints.isEmpty()) {
+        if ((keyCode == InputConstants.KEY_UP || keyCode == InputConstants.KEY_DOWN) && !dimensionWaypoints.isEmpty()) {
             int idx = selected != null ? dimensionWaypoints.indexOf(selected) : -1;
-            if (keyCode == GLFW.GLFW_KEY_UP) {
+            if (keyCode == InputConstants.KEY_UP) {
                 idx = idx <= 0 ? 0 : idx - 1;
             } else {
                 idx = idx < 0 ? 0 : Math.min(dimensionWaypoints.size() - 1, idx + 1);
