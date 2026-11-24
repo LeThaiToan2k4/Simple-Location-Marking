@@ -4,7 +4,7 @@
 
 ### Changed
 
-- **Target Minecraft & Toolchain:** Upgraded from Minecraft Fabric `1.21.4` to Minecraft Fabric `1.21.5` (Java `21`, Gradle `8.12`, Fabric Loom `1.11.8`, Yarn `1.21.5+build.1`, Fabric Loader `>= 0.20.1`, Fabric API `0.128.2+1.21.5`).
+- **Target Minecraft & Toolchain:** Upgraded from Minecraft Fabric `1.21.4` to Minecraft Fabric `1.21.5` (Java `21`, Gradle `8.12`, Fabric Loom `1.10-SNAPSHOT`, Yarn `1.21.5+build.1`, Fabric Loader `>= 0.20.1`, Fabric API `0.128.2+1.21.5`).
 - **HUD & RenderTickCounter Migration:**
   - Removed obsolete `RenderSystem.enableBlend()` call in `InGameHudMixin` following Minecraft `1.21.5`'s Blaze3D `RenderPipeline` refactor (`DrawContext` manages blend state via `RenderLayer`).
   - Updated `WaypointHudRenderer` from `RenderTickCounter#getLastDuration()` to `RenderTickCounter#getDynamicDeltaTicks()`.
