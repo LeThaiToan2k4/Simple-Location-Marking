@@ -1,6 +1,5 @@
 package com.thaistoanf.simplelocationmarking.mixin;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.thaistoanf.simplelocationmarking.SimpleLocationMarkingClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
@@ -24,6 +23,5 @@ public abstract class InGameHudMixin {
     private void simplelocationmarking$renderWaypointsBeforeCrosshair(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         SimpleLocationMarkingClient.HUD_RENDERER.render(context, tickCounter);
         context.draw();
-        RenderSystem.enableBlend();
     }
 }

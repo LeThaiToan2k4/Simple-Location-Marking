@@ -81,7 +81,7 @@ public final class WaypointHudRenderer {
         double pz = player.getZ();
 
         TextRenderer textRenderer = client.textRenderer;
-        float step = tickCounter.getLastDuration() * EXPAND_SPEED_PER_TICK;
+        float step = tickCounter.getDynamicDeltaTicks() * EXPAND_SPEED_PER_TICK;
 
         // ---- 1. Project normalized direction vectors onto the 2D HUD ----
         count = 0;
