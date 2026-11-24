@@ -2,8 +2,8 @@ package com.thaistoanf.simplelocationmarking.gui.widget;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
+import org.joml.Matrix3x2fStack;
 
 import java.util.Random;
 
@@ -217,9 +217,9 @@ public final class HexColorPalette {
         int scale = Math.max(1, (int) Math.round(MinecraftClient.getInstance().getWindow().getScaleFactor()));
         float f = scale;
 
-        MatrixStack matrices = context.getMatrices();
-        matrices.push();
-        matrices.scale(1.0f / f, 1.0f / f, 1.0f);
+        Matrix3x2fStack matrices = context.getMatrices();
+        matrices.pushMatrix();
+        matrices.scale(1.0f / f, 1.0f / f);
 
         float ox = centerX() * f;
         float oy = centerY() * f;
@@ -254,7 +254,7 @@ public final class HexColorPalette {
             fillHex(context, cx, cy, cellRadius, 0xFF000000 | selRgb);
         }
 
-        matrices.pop();
+        matrices.popMatrix();
     }
 
     /**

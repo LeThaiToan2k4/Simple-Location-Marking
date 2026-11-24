@@ -3,7 +3,7 @@ package com.thaistoanf.simplelocationmarking.gui;
 import com.thaistoanf.simplelocationmarking.util.TextUtil;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
+import org.joml.Matrix3x2fStack;
 
 /**
  * Shared color constants and drawing primitives for the Translucent Dark Glass UI theme.
@@ -189,14 +189,14 @@ public final class GlassUi {
         // 3. Scaled Distance Pill (0.75f) below expanded pill
         String sampleDist = "125m";
         int distW = textRenderer.getWidth(sampleDist);
-        MatrixStack matrices = context.getMatrices();
-        matrices.push();
-        matrices.translate(centerX, eBottom + 3.0f, 0.0f);
-        matrices.scale(0.75f, 0.75f, 1.0f);
+        Matrix3x2fStack matrices = context.getMatrices();
+        matrices.pushMatrix();
+        matrices.translate(centerX, eBottom + 3.0f);
+        matrices.scale(0.75f, 0.75f);
         int dLeft = -distW / 2;
         context.fill(dLeft - 3, -1, dLeft + distW + 2, 9, HUD_DISTANCE_BG);
         context.drawText(textRenderer, sampleDist, dLeft, 0, HUD_DISTANCE_TEXT, true);
-        matrices.pop();
+        matrices.popMatrix();
     }
 }
 

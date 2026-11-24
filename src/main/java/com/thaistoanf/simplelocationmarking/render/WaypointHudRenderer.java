@@ -8,8 +8,8 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
+import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -254,14 +254,14 @@ public final class WaypointHudRenderer {
         // Distance label below marker inside a smaller translucent dark pill (0x80000000, scale 0.75f, 0xFFE0E0E0)
         String distanceText = waypoint.distanceText(distanceValue);
         int distanceWidth = waypoint.distanceWidth(textRenderer);
-        MatrixStack matrices = context.getMatrices();
-        matrices.push();
-        matrices.translate(cx, bottom + 3.0f, 0.0f);
-        matrices.scale(DISTANCE_SCALE, DISTANCE_SCALE, 1.0f);
+        Matrix3x2fStack matrices = context.getMatrices();
+        matrices.pushMatrix();
+        matrices.translate(cx, bottom + 3.0f);
+        matrices.scale(DISTANCE_SCALE, DISTANCE_SCALE);
         int dLeft = -distanceWidth / 2;
         context.fill(dLeft - 3, -1, dLeft + distanceWidth + 2, 9, DISTANCE_BACKGROUND);
         context.drawText(textRenderer, distanceText, dLeft, 0, DISTANCE_COLOR, true);
-        matrices.pop();
+        matrices.popMatrix();
     }
 
     private void ensureCapacity(int required) {

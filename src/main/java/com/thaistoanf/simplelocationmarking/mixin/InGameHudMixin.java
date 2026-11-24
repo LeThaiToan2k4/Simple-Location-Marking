@@ -22,6 +22,5 @@ public abstract class InGameHudMixin {
     )
     private void simplelocationmarking$renderWaypointsBeforeCrosshair(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         SimpleLocationMarkingClient.HUD_RENDERER.render(context, tickCounter);
-        context.draw();
     }
 }
