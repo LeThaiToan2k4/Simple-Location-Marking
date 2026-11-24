@@ -17,11 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class InGameHudMixin {
 
     @Inject(
-            method = "render(Lnet/minecraft/client/gui/DrawContext;F)V",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/hud/InGameHud;renderCrosshair(Lnet/minecraft/client/gui/DrawContext;)V"
-            )
+            method = "renderCrosshair(Lnet/minecraft/client/gui/DrawContext;F)V",
+            at = @At("HEAD")
     )
     private void simplelocationmarking$renderWaypointsBeforeCrosshair(DrawContext context, float tickDelta, CallbackInfo ci) {
         SimpleLocationMarkingClient.HUD_RENDERER.render(context, tickDelta);
