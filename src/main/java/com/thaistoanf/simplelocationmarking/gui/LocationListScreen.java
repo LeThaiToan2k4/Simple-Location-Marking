@@ -155,13 +155,13 @@ public final class LocationListScreen extends Screen {
     }
 
     private void openAddScreen() {
-        this.minecraft.setScreen(new AddWaypointScreen(this));
+        this.minecraft.gui.setScreen(new AddWaypointScreen(this));
     }
 
     private void openEditScreen() {
         Waypoint target = selected;
         if (target != null) {
-            this.minecraft.setScreen(new EditWaypointScreen(this, target));
+            this.minecraft.gui.setScreen(new EditWaypointScreen(this, target));
         }
     }
 

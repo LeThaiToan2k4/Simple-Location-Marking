@@ -59,7 +59,7 @@ public final class WaypointHudRenderer implements HudElement {
         Minecraft client = Minecraft.getInstance();
         LocalPlayer player = client.player;
         ClientLevel level = client.level;
-        if (player == null || level == null || client.options.hideGui || !ProjectionState.isValid()) {
+        if (player == null || level == null || client.gui.hud.isHidden() || !ProjectionState.isValid()) {
             return;
         }
         List<Waypoint> waypoints = WaypointManager.all();

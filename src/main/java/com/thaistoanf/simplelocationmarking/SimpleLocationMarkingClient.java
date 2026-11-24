@@ -50,9 +50,9 @@ public final class SimpleLocationMarkingClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (openScreenKey.consumeClick()) {
-                if (client.player != null && client.level != null && client.screen == null) {
+                if (client.player != null && client.level != null && client.gui.screen() == null) {
                     WaypointManager.ensureLoaded(client);
-                    client.setScreen(new LocationListScreen());
+                    client.gui.setScreen(new LocationListScreen());
                 }
             }
         });
