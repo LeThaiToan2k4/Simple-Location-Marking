@@ -7,6 +7,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import org.joml.Matrix4f;
@@ -49,7 +50,7 @@ public final class WaypointHudRenderer {
     private double[] distance = new double[32];
     private int count;
 
-    public void render(DrawContext context, float tickDelta) {
+    public void render(DrawContext context, RenderTickCounter tickCounter) {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayerEntity player = client.player;
         ClientWorld world = client.world;
@@ -80,7 +81,7 @@ public final class WaypointHudRenderer {
         double pz = player.getZ();
 
         TextRenderer textRenderer = client.textRenderer;
-        float step = client.getLastFrameDuration() * EXPAND_SPEED_PER_TICK;
+        float step = tickCounter.getLastDuration() * EXPAND_SPEED_PER_TICK;
 
         // ---- 1. Project normalized direction vectors onto the 2D HUD ----
         count = 0;

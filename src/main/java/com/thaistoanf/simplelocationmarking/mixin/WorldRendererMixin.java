@@ -4,6 +4,7 @@ import com.thaistoanf.simplelocationmarking.render.ProjectionState;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.render.WorldRenderer;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,10 +20,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class WorldRendererMixin {
 
     @Inject(
-            method = "render(FJZLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/GameRenderer;Lnet/minecraft/client/render/LightmapTextureManager;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V",
+            method = "render(Lnet/minecraft/client/render/RenderTickCounter;ZLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/GameRenderer;Lnet/minecraft/client/render/LightmapTextureManager;Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;)V",
             at = @At("HEAD")
     )
-    private void simplelocationmarking$captureMatrices(float tickDelta, long limitTime,
+    private void simplelocationmarking$captureMatrices(RenderTickCounter tickCounter,
                                                        boolean renderBlockOutline, Camera camera,
                                                        GameRenderer gameRenderer,
                                                        LightmapTextureManager lightmapTextureManager,
