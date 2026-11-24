@@ -112,7 +112,7 @@ public final class EditWaypointScreen extends Screen {
         nameBox.setEditable(true);
         nameBox.setValue(draftName);
         nameBox.setHint(Component.translatable("simplelocationmarking.field.name.placeholder"));
-        nameBox.setResponder(text -> {
+        nameBox.setResponder((@NonNull String text) -> {
             draftName = text;
             updateSubmitButtonState();
         });
@@ -130,14 +130,14 @@ public final class EditWaypointScreen extends Screen {
 
         int xFieldX = innerLeft + labelPad;
         EditBox xBox = createEditableCoordField(xFieldX, coordsFieldY, singleWidth, draftX,
-                "simplelocationmarking.field.x", text -> {
+                "simplelocationmarking.field.x", (@NonNull String text) -> {
                     draftX = text;
                     updateSubmitButtonState();
                 });
 
         int yFieldX = xFieldX + singleWidth + coordGap + labelPad;
         EditBox yBox = createEditableCoordField(yFieldX, coordsFieldY, singleWidth, draftY,
-                "simplelocationmarking.field.y", text -> {
+                "simplelocationmarking.field.y", (@NonNull String text) -> {
                     draftY = text;
                     updateSubmitButtonState();
                 });
@@ -145,7 +145,7 @@ public final class EditWaypointScreen extends Screen {
         int zFieldX = yFieldX + singleWidth + coordGap + labelPad;
         int zWidth = innerRight - zFieldX;
         EditBox zBox = createEditableCoordField(zFieldX, coordsFieldY, zWidth, draftZ,
-                "simplelocationmarking.field.z", text -> {
+                "simplelocationmarking.field.z", (@NonNull String text) -> {
                     draftZ = text;
                     updateSubmitButtonState();
                 });

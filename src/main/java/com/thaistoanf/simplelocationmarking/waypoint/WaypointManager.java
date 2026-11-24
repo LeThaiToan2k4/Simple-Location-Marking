@@ -145,11 +145,14 @@ public final class WaypointManager {
         }
         try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
             StorageFile data = GSON.fromJson(reader, StorageFile.class);
-            if (data != null && data.waypoints != null) {
-                for (Waypoint waypoint : data.waypoints) {
-                    if (waypoint != null) {
-                        waypoint.sanitize();
-                        WAYPOINTS.add(waypoint);
+            if (data != null) {
+                List<Waypoint> loaded = data.waypoints;
+                if (loaded != null) {
+                    for (Waypoint waypoint : loaded) {
+                        if (waypoint != null) {
+                            waypoint.sanitize();
+                            WAYPOINTS.add(waypoint);
+                        }
                     }
                 }
             }

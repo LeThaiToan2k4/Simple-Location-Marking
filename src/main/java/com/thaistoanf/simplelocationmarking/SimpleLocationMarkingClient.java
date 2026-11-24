@@ -11,8 +11,10 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.glfw.GLFW;
@@ -48,7 +50,7 @@ public final class SimpleLocationMarkingClient implements ClientModInitializer {
                 new WaypointHudRenderer()
         );
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+        ClientTickEvents.END_CLIENT_TICK.register((@NonNull Minecraft client) -> {
             while (openScreenKey.consumeClick()) {
                 if (client.player != null && client.level != null && client.screen == null) {
                     WaypointManager.ensureLoaded(client);
@@ -57,9 +59,9 @@ public final class SimpleLocationMarkingClient implements ClientModInitializer {
             }
         });
 
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
+        ClientPlayConnectionEvents.JOIN.register((@NonNull ClientPacketListener handler, @NonNull PacketSender sender, @NonNull Minecraft client) ->
                 runOnClientThread(client, () -> WaypointManager.onJoin(client)));
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
+        ClientPlayConnectionEvents.DISCONNECT.register((@NonNull ClientPacketListener handler, @NonNull Minecraft client) ->
                 runOnClientThread(client, () -> {
                     WaypointManager.onDisconnect();
                     ProjectionState.invalidate();

@@ -14,7 +14,9 @@ import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -46,7 +48,7 @@ public final class WaypointHudRenderer implements HudElement {
 
     private final @NonNull Vector4f clip = new Vector4f();
 
-    private Waypoint[] visible = new Waypoint[32];
+    private @Nullable Waypoint[] visible = new @Nullable Waypoint[32];
     private float[] screenX = new float[32];
     private float[] screenY = new float[32];
     private double[] distance = new double[32];
@@ -93,8 +95,10 @@ public final class WaypointHudRenderer implements HudElement {
 
         for (int i = 0, n = waypoints.size(); i < n; i++) {
             Waypoint waypoint = waypoints.get(i);
-            if (waypoint.hidden || !dimension.equals(waypoint.dimension)) {
-                waypoint.hoverProgress = 0.0f;
+            if (waypoint == null || waypoint.hidden || !dimension.equals(waypoint.dimension)) {
+                if (waypoint != null) {
+                    waypoint.hoverProgress = 0.0f;
+                }
                 continue;
             }
 
@@ -161,6 +165,9 @@ public final class WaypointHudRenderer implements HudElement {
         // ---- 2. Animate expansion ----
         for (int i = 0; i < count; i++) {
             Waypoint waypoint = visible[i];
+            if (waypoint == null) {
+                continue;
+            }
             if (waypoint == hovered) {
                 waypoint.hoverProgress = Math.min(1.0f, waypoint.hoverProgress + step);
             } else {
@@ -170,7 +177,7 @@ public final class WaypointHudRenderer implements HudElement {
 
         // ---- 3. Sort far to near so closer markers are drawn on top (insertion sort, no allocation) ----
         for (int i = 1; i < count; i++) {
-            Waypoint w = visible[i];
+            @Nullable Waypoint w = visible[i];
             float x = screenX[i];
             float y = screenY[i];
             double d = distance[i];
@@ -191,14 +198,21 @@ public final class WaypointHudRenderer implements HudElement {
         // ---- 4. Draw at fixed 1.0f screen-space scale (hovered marker last so it is always on top) ----
         int hoveredIndex = -1;
         for (int i = 0; i < count; i++) {
-            if (visible[i] == hovered) {
+            Waypoint waypoint = visible[i];
+            if (waypoint == null) {
+                continue;
+            }
+            if (waypoint == hovered) {
                 hoveredIndex = i;
                 continue;
             }
-            drawMarker(graphics, font, visible[i], screenX[i], screenY[i], distance[i]);
+            drawMarker(graphics, font, waypoint, screenX[i], screenY[i], distance[i]);
         }
         if (hoveredIndex >= 0) {
-            drawMarker(graphics, font, visible[hoveredIndex], screenX[hoveredIndex], screenY[hoveredIndex], distance[hoveredIndex]);
+            Waypoint hoveredWaypoint = visible[hoveredIndex];
+            if (hoveredWaypoint != null) {
+                drawMarker(graphics, font, hoveredWaypoint, screenX[hoveredIndex], screenY[hoveredIndex], distance[hoveredIndex]);
+            }
         }
 
         // Release references so removed waypoints can be garbage collected.
@@ -207,8 +221,8 @@ public final class WaypointHudRenderer implements HudElement {
         }
     }
 
-    private static void drawMarker(@NonNull GuiGraphicsExtractor graphics, @NonNull Font font, Waypoint waypoint,
-                                   float sx, float sy, double distanceValue) {
+    private static void drawMarker(@NonNull GuiGraphicsExtractor graphics, @NonNull Font font,
+                                   @NonNull Waypoint waypoint, float sx, float sy, double distanceValue) {
         int cx = Math.round(sx);
         int cy = Math.round(sy);
 
@@ -272,10 +286,12 @@ public final class WaypointHudRenderer implements HudElement {
             return;
         }
         int size = Math.max(required, visible.length * 2);
-        visible = java.util.Arrays.copyOf(visible, size);
-        screenX = java.util.Arrays.copyOf(screenX, size);
-        screenY = java.util.Arrays.copyOf(screenY, size);
-        distance = java.util.Arrays.copyOf(distance, size);
+        @Nullable Waypoint[] nextVisible = new @Nullable Waypoint[size];
+        System.arraycopy(visible, 0, nextVisible, 0, visible.length);
+        visible = nextVisible;
+        screenX = Arrays.copyOf(screenX, size);
+        screenY = Arrays.copyOf(screenY, size);
+        distance = Arrays.copyOf(distance, size);
     }
 
     private static int alpha(float a) {
