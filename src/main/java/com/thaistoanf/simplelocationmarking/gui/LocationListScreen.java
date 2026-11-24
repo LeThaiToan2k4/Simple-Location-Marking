@@ -3,17 +3,17 @@ package com.thaistoanf.simplelocationmarking.gui;
 import com.thaistoanf.simplelocationmarking.util.DimensionNames;
 import com.thaistoanf.simplelocationmarking.waypoint.Waypoint;
 import com.thaistoanf.simplelocationmarking.waypoint.WaypointManager;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.input.KeyInput;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -51,16 +51,16 @@ public final class LocationListScreen extends Screen {
     private int listTop;
     private int listBottom;
 
-    private ButtonWidget addButton;
-    private ButtonWidget editButton;
-    private ButtonWidget hideShowButton;
-    private ButtonWidget deleteButton;
+    private Button addButton;
+    private Button editButton;
+    private Button hideShowButton;
+    private Button deleteButton;
 
     private long lastClickTimeMs;
     private Waypoint lastClickedWaypoint;
 
     public LocationListScreen() {
-        super(Text.translatable("simplelocationmarking.screen.list.title"));
+        super(Component.translatable("simplelocationmarking.screen.list.title"));
     }
 
     public void setSelected(Waypoint waypoint) {
@@ -72,8 +72,8 @@ public final class LocationListScreen extends Screen {
     protected void init() {
         super.init();
 
-        if (client != null && client.world != null) {
-            currentDimensionId = WaypointManager.dimensionId(client.world);
+        if (minecraft != null && minecraft.level != null) {
+            currentDimensionId = WaypointManager.dimensionId(minecraft.level);
         }
         reloadWaypoints();
 
@@ -93,28 +93,28 @@ public final class LocationListScreen extends Screen {
         int buttonWidth = (innerWidth - buttonGap * 3) / 4;
         int buttonY = panelBottom - 26;
 
-        addButton = addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("simplelocationmarking.button.add"),
+        addButton = addRenderableWidget(Button.builder(
+                        Component.translatable("simplelocationmarking.button.add"),
                         btn -> openAddScreen())
-                .dimensions(listLeft, buttonY, buttonWidth, 20)
+                .bounds(listLeft, buttonY, buttonWidth, 20)
                 .build());
 
-        editButton = addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("simplelocationmarking.button.edit"),
+        editButton = addRenderableWidget(Button.builder(
+                        Component.translatable("simplelocationmarking.button.edit"),
                         btn -> openEditScreen())
-                .dimensions(listLeft + (buttonWidth + buttonGap), buttonY, buttonWidth, 20)
+                .bounds(listLeft + (buttonWidth + buttonGap), buttonY, buttonWidth, 20)
                 .build());
 
-        hideShowButton = addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("simplelocationmarking.button.hide_show"),
+        hideShowButton = addRenderableWidget(Button.builder(
+                        Component.translatable("simplelocationmarking.button.hide_show"),
                         btn -> toggleSelectedHidden())
-                .dimensions(listLeft + (buttonWidth + buttonGap) * 2, buttonY, buttonWidth, 20)
+                .bounds(listLeft + (buttonWidth + buttonGap) * 2, buttonY, buttonWidth, 20)
                 .build());
 
-        deleteButton = addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("simplelocationmarking.button.delete"),
+        deleteButton = addRenderableWidget(Button.builder(
+                        Component.translatable("simplelocationmarking.button.delete"),
                         btn -> deleteSelected())
-                .dimensions(listLeft + (buttonWidth + buttonGap) * 3, buttonY, innerWidth - (buttonWidth + buttonGap) * 3, 20)
+                .bounds(listLeft + (buttonWidth + buttonGap) * 3, buttonY, innerWidth - (buttonWidth + buttonGap) * 3, 20)
                 .build());
 
         clampScroll();
@@ -147,14 +147,14 @@ public final class LocationListScreen extends Screen {
     }
 
     private void openAddScreen() {
-        if (client != null) {
-            client.setScreen(new AddWaypointScreen(this));
+        if (minecraft != null) {
+            minecraft.setScreen(new AddWaypointScreen(this));
         }
     }
 
     private void openEditScreen() {
-        if (client != null && selected != null) {
-            client.setScreen(new EditWaypointScreen(this, selected));
+        if (minecraft != null && selected != null) {
+            minecraft.setScreen(new EditWaypointScreen(this, selected));
         }
     }
 
@@ -196,7 +196,7 @@ public final class LocationListScreen extends Screen {
     }
 
     private void clampScroll() {
-        scrollOffset = MathHelper.clamp(scrollOffset, 0.0, maxScroll());
+        scrollOffset = Mth.clamp(scrollOffset, 0.0, maxScroll());
     }
 
     // ------------------------------------------------------------------------------------------
@@ -204,45 +204,45 @@ public final class LocationListScreen extends Screen {
     // ------------------------------------------------------------------------------------------
 
     @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         // Subtle dark translucent full-screen overlay over the live game world (no blur or dirt background)
-        GlassUi.drawScreenBackdrop(context, this.width, this.height);
+        GlassUi.drawScreenBackdrop(graphics, this.width, this.height);
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         int centerX = this.width / 2;
 
         // 1. Centered Translucent Glass Main Panel + Top Header Bar
-        GlassUi.drawMainPanel(context, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
+        GlassUi.drawMainPanel(graphics, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
 
         // 2. Header Title & Dimension / Coordinates Pill Badges
-        context.drawCenteredTextWithShadow(this.textRenderer, this.title, centerX, panelTop + 6, 0xFFFFFFFF);
-        renderHeaderPills(context, centerX, panelTop + 21);
+        graphics.centeredText(this.font, this.title, centerX, panelTop + 6, 0xFFFFFFFF);
+        renderHeaderPills(graphics, centerX, panelTop + 21);
 
         // 3. Recessed Scrollable Waypoint List Viewport (0x880B0C10)
-        GlassUi.drawSubPanel(context, listLeft, listTop, listRight, listBottom);
+        GlassUi.drawSubPanel(graphics, listLeft, listTop, listRight, listBottom);
 
         if (dimensionWaypoints.isEmpty()) {
-            Text emptyText = Text.translatable("simplelocationmarking.screen.list.empty");
-            context.drawCenteredTextWithShadow(
-                    this.textRenderer,
+            Component emptyText = Component.translatable("simplelocationmarking.screen.list.empty");
+            graphics.centeredText(
+                    this.font,
                     emptyText,
                     centerX,
                     (listTop + listBottom) / 2 - 4,
                     0xFF8892A8
             );
         } else {
-            renderRows(context, mouseX, mouseY);
-            renderScrollbar(context, mouseX, mouseY);
+            renderRows(graphics, mouseX, mouseY);
+            renderScrollbar(graphics, mouseX, mouseY);
         }
 
         // 4. Action Buttons
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(graphics, mouseX, mouseY, a);
     }
 
-    private void renderHeaderPills(DrawContext context, int centerX, int pillTop) {
-        Text dimName = DimensionNames.of(currentDimensionId);
+    private void renderHeaderPills(GuiGraphicsExtractor graphics, int centerX, int pillTop) {
+        Component dimName = DimensionNames.of(currentDimensionId);
         String dimStr = dimName.getString();
 
         int dimFill;
@@ -271,34 +271,34 @@ public final class LocationListScreen extends Screen {
             }
         }
 
-        BlockPos pos = (client != null && client.player != null) ? client.player.getBlockPos() : BlockPos.ORIGIN;
+        BlockPos pos = (minecraft != null && minecraft.player != null) ? minecraft.player.blockPosition() : BlockPos.ZERO;
         String coordsStr = "X: " + pos.getX() + "  Y: " + pos.getY() + "  Z: " + pos.getZ();
 
         int pillHeight = 15;
-        int dimWidth = this.textRenderer.getWidth(dimStr) + 18;
-        int coordsWidth = this.textRenderer.getWidth(coordsStr) + 14;
+        int dimWidth = this.font.width(dimStr) + 18;
+        int coordsWidth = this.font.width(coordsStr) + 14;
         int gap = 8;
         int totalWidth = dimWidth + gap + coordsWidth;
         int startX = centerX - totalWidth / 2;
 
         // Dimension pill box with glowing status dot
         int dimRight = startX + dimWidth;
-        GlassUi.drawPill(context, startX, pillTop, dimRight, pillTop + pillHeight, dimFill, dimBorder);
+        GlassUi.drawPill(graphics, startX, pillTop, dimRight, pillTop + pillHeight, dimFill, dimBorder);
         int dotX = startX + 5;
         int dotY = pillTop + 5;
-        context.fill(dotX - 1, dotY - 1, dotX + 6, dotY + 6, 0x44000000 | (dimBorder & 0xFFFFFF));
-        context.fill(dotX, dotY, dotX + 5, dotY + 5, dimBorder);
-        context.drawTextWithShadow(this.textRenderer, dimStr, startX + 13, pillTop + 4, dimText);
+        graphics.fill(dotX - 1, dotY - 1, dotX + 6, dotY + 6, 0x44000000 | (dimBorder & 0xFFFFFF));
+        graphics.fill(dotX, dotY, dotX + 5, dotY + 5, dimBorder);
+        graphics.text(this.font, dimStr, startX + 13, pillTop + 4, dimText);
 
         // Coordinates pill box
         int coordsLeft = dimRight + gap;
         int coordsRight = coordsLeft + coordsWidth;
-        GlassUi.drawPill(context, coordsLeft, pillTop, coordsRight, pillTop + pillHeight, 0x90131824, 0xFF384462);
-        context.drawTextWithShadow(this.textRenderer, coordsStr, coordsLeft + 7, pillTop + 4, 0xFFDCE6FF);
+        GlassUi.drawPill(graphics, coordsLeft, pillTop, coordsRight, pillTop + pillHeight, 0x90131824, 0xFF384462);
+        graphics.text(this.font, coordsStr, coordsLeft + 7, pillTop + 4, 0xFFDCE6FF);
     }
 
-    private void renderRows(DrawContext context, int mouseX, int mouseY) {
-        ClientPlayerEntity player = client != null ? client.player : null;
+    private void renderRows(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        LocalPlayer player = minecraft != null ? minecraft.player : null;
         double px = player != null ? player.getX() : 0.0;
         double py = player != null ? player.getY() : 0.0;
         double pz = player != null ? player.getZ() : 0.0;
@@ -308,10 +308,10 @@ public final class LocationListScreen extends Screen {
         int innerTop = listTop + ROW_PADDING;
         int innerBottom = listBottom - ROW_PADDING;
 
-        context.enableScissor(listLeft + 1, listTop + 1, listRight - 1, listBottom - 1);
+        graphics.enableScissor(listLeft + 1, listTop + 1, listRight - 1, listBottom - 1);
 
-        String hiddenTag = Text.translatable("simplelocationmarking.waypoint.hidden_tag").getString();
-        int hiddenTagW = this.textRenderer.getWidth(hiddenTag);
+        String hiddenTag = Component.translatable("simplelocationmarking.waypoint.hidden_tag").getString();
+        int hiddenTagW = this.font.width(hiddenTag);
 
         for (int i = 0, n = dimensionWaypoints.size(); i < n; i++) {
             Waypoint wp = dimensionWaypoints.get(i);
@@ -328,14 +328,14 @@ public final class LocationListScreen extends Screen {
 
             // Row card styling (0x661E222F normal, 0x99282E40 hover, 0xBB2D364D + bright 1px border selected)
             if (isSelected) {
-                context.fill(innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_SELECTED_BG);
-                GlassUi.drawBorder(context, innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_SELECTED_BORDER);
+                graphics.fill(innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_SELECTED_BG);
+                GlassUi.drawBorder(graphics, innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_SELECTED_BORDER);
             } else if (isHovered) {
-                context.fill(innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_HOVER_BG);
-                GlassUi.drawBorder(context, innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_HOVER_BORDER);
+                graphics.fill(innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_HOVER_BG);
+                GlassUi.drawBorder(graphics, innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_HOVER_BORDER);
             } else {
-                context.fill(innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_NORMAL_BG);
-                GlassUi.drawBorder(context, innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_NORMAL_BORDER);
+                graphics.fill(innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_NORMAL_BG);
+                GlassUi.drawBorder(graphics, innerLeft, rowTop, innerRight, rowBottom, GlassUi.ROW_NORMAL_BORDER);
             }
 
             int cardHeight = rowBottom - rowTop;
@@ -345,19 +345,19 @@ public final class LocationListScreen extends Screen {
             int swatchSize = 11;
             int swatchX = innerLeft + 6;
             int swatchY = rowTop + (cardHeight - swatchSize) / 2;
-            GlassUi.drawGlowingSwatch(context, swatchX, swatchY, swatchSize, wp.color);
+            GlassUi.drawGlowingSwatch(graphics, swatchX, swatchY, swatchSize, wp.color);
 
             // 2. Right-aligned distance badge (m / km)
             double dist = wp.distanceTo(px, py, pz);
             String distStr = wp.distanceText(dist);
-            int distTextW = wp.distanceWidth(this.textRenderer);
+            int distTextW = wp.distanceWidth(this.font);
             int distBadgeW = distTextW + 10;
             int distRight = innerRight - 5;
             int distLeft = distRight - distBadgeW;
             int badgeTop = rowTop + 3;
             int badgeBottom = rowBottom - 3;
-            GlassUi.drawPill(context, distLeft, badgeTop, distRight, badgeBottom, 0x880C0E15, 0xFF30384E);
-            context.drawTextWithShadow(this.textRenderer, distStr, distLeft + 5, textY, 0xFFDCE6FF);
+            GlassUi.drawPill(graphics, distLeft, badgeTop, distRight, badgeBottom, 0x880C0E15, 0xFF30384E);
+            graphics.text(this.font, distStr, distLeft + 5, textY, 0xFFDCE6FF);
 
             int rightLimit = distLeft - 6;
 
@@ -366,8 +366,8 @@ public final class LocationListScreen extends Screen {
                 int tagBadgeW = hiddenTagW + 8;
                 int tagRight = rightLimit;
                 int tagLeft = tagRight - tagBadgeW;
-                GlassUi.drawPill(context, tagLeft, badgeTop, tagRight, badgeBottom, 0x55FF4838, 0xBBFF6E58);
-                context.drawTextWithShadow(this.textRenderer, hiddenTag, tagLeft + 4, textY, 0xFFFFAE70);
+                GlassUi.drawPill(graphics, tagLeft, badgeTop, tagRight, badgeBottom, 0x55FF4838, 0xBBFF6E58);
+                graphics.text(this.font, hiddenTag, tagLeft + 4, textY, 0xFFFFAE70);
                 rightLimit = tagLeft - 6;
             }
 
@@ -377,31 +377,31 @@ public final class LocationListScreen extends Screen {
                 displayName = "?";
             }
             String coordsText = "(" + wp.x + ", " + wp.y + ", " + wp.z + ")";
-            int coordsW = this.textRenderer.getWidth(coordsText);
+            int coordsW = this.font.width(coordsText);
 
             int nameX = swatchX + swatchSize + 7;
             int availableForNameAndCoords = Math.max(20, rightLimit - nameX);
             int maxNameW = Math.max(24, availableForNameAndCoords - coordsW - 8);
 
-            String fittedName = this.textRenderer.trimToWidth(displayName, maxNameW);
+            String fittedName = this.font.plainSubstrByWidth(displayName, maxNameW);
             if (fittedName.length() < displayName.length() && fittedName.length() > 2) {
-                fittedName = this.textRenderer.trimToWidth(displayName, maxNameW - 8) + "..";
+                fittedName = this.font.plainSubstrByWidth(displayName, maxNameW - 8) + "..";
             }
 
             int nameColor = wp.hidden ? 0xFF9AA2B4 : 0xFFFFFFFF;
-            context.drawTextWithShadow(this.textRenderer, fittedName, nameX, textY, nameColor);
+            graphics.text(this.font, fittedName, nameX, textY, nameColor);
 
-            int coordsX = nameX + this.textRenderer.getWidth(fittedName) + 6;
+            int coordsX = nameX + this.font.width(fittedName) + 6;
             if (coordsX + coordsW <= rightLimit) {
                 int coordsColor = wp.hidden ? 0xFF6E7586 : 0xFF9098AE;
-                context.drawTextWithShadow(this.textRenderer, coordsText, coordsX, textY, coordsColor);
+                graphics.text(this.font, coordsText, coordsX, textY, coordsColor);
             }
         }
 
-        context.disableScissor();
+        graphics.disableScissor();
     }
 
-    private void renderScrollbar(DrawContext context, int mouseX, int mouseY) {
+    private void renderScrollbar(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         int max = maxScroll();
         if (max <= 0) {
             return;
@@ -413,7 +413,7 @@ public final class LocationListScreen extends Screen {
         int trackHeight = trackBottom - trackTop;
 
         // Slim 4px semi-transparent scrollbar track
-        context.fill(trackLeft, trackTop, trackRight, trackBottom, 0x5008090D);
+        graphics.fill(trackLeft, trackTop, trackRight, trackBottom, 0x5008090D);
 
         int thumbHeight = Math.max(18, (int) ((double) viewHeight() / contentHeight() * trackHeight));
         int thumbTop = trackTop + (int) ((scrollOffset / max) * (trackHeight - thumbHeight));
@@ -421,7 +421,7 @@ public final class LocationListScreen extends Screen {
 
         boolean hovered = draggingScrollbar || (mouseX >= trackLeft && mouseX <= trackRight && mouseY >= thumbTop && mouseY <= thumbBottom);
         int thumbColor = hovered ? 0xD0A8B8DC : 0x907884A0;
-        context.fill(trackLeft, thumbTop, trackRight, thumbBottom, thumbColor);
+        graphics.fill(trackLeft, thumbTop, trackRight, thumbBottom, thumbColor);
     }
 
     // ------------------------------------------------------------------------------------------
@@ -429,26 +429,26 @@ public final class LocationListScreen extends Screen {
     // ------------------------------------------------------------------------------------------
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (maxScroll() > 0 && mouseX >= listLeft && mouseX <= listRight && mouseY >= listTop && mouseY <= listBottom) {
-            scrollOffset -= verticalAmount * (ROW_HEIGHT * 1.25);
+            scrollOffset -= scrollY * (ROW_HEIGHT * 1.25);
             clampScroll();
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (super.mouseClicked(click, doubled)) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubled) {
+        if (super.mouseClicked(event, doubled)) {
             return true;
         }
-        if (click.button() != 0) {
+        if (event.button() != 0) {
             return false;
         }
 
-        double mouseX = click.x();
-        double mouseY = click.y();
+        double mouseX = event.x();
+        double mouseY = event.y();
 
         // Check scrollbar click
         if (maxScroll() > 0) {
@@ -480,8 +480,8 @@ public final class LocationListScreen extends Screen {
 
                 selected = clicked;
                 updateButtonStates();
-                if (client != null) {
-                    client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f));
+                if (minecraft != null) {
+                    minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
                 }
                 if (isDoubleClick) {
                     openEditScreen();
@@ -494,21 +494,21 @@ public final class LocationListScreen extends Screen {
     }
 
     @Override
-    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
-        if (draggingScrollbar && click.button() == 0) {
-            updateScrollFromMouse(click.y());
+    public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
+        if (draggingScrollbar && event.button() == 0) {
+            updateScrollFromMouse(event.y());
             return true;
         }
-        return super.mouseDragged(click, deltaX, deltaY);
+        return super.mouseDragged(event, deltaX, deltaY);
     }
 
     @Override
-    public boolean mouseReleased(Click click) {
-        if (click.button() == 0 && draggingScrollbar) {
+    public boolean mouseReleased(MouseButtonEvent event) {
+        if (event.button() == 0 && draggingScrollbar) {
             draggingScrollbar = false;
             return true;
         }
-        return super.mouseReleased(click);
+        return super.mouseReleased(event);
     }
 
     private void updateScrollFromMouse(double mouseY) {
@@ -522,12 +522,12 @@ public final class LocationListScreen extends Screen {
         int thumbHeight = Math.max(18, (int) ((double) viewHeight() / contentHeight() * trackHeight));
         int usable = Math.max(1, trackHeight - thumbHeight);
         double ratio = (mouseY - trackTop - thumbHeight * 0.5) / usable;
-        scrollOffset = MathHelper.clamp(ratio * max, 0.0, max);
+        scrollOffset = Mth.clamp(ratio * max, 0.0, max);
     }
 
     @Override
-    public boolean keyPressed(KeyInput input) {
-        int keyCode = input.getKeycode();
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
         if (keyCode == GLFW.GLFW_KEY_DELETE && selected != null) {
             deleteSelected();
             return true;
@@ -544,7 +544,7 @@ public final class LocationListScreen extends Screen {
             updateButtonStates();
             return true;
         }
-        return super.keyPressed(input);
+        return super.keyPressed(event);
     }
 
     private void ensureVisible(int rowIndex) {
@@ -559,7 +559,7 @@ public final class LocationListScreen extends Screen {
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 }

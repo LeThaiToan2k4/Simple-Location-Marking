@@ -5,12 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.thaistoanf.simplelocationmarking.SimpleLocationMarkingClient;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.WorldSavePath;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelResource;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -30,9 +30,8 @@ import java.util.Locale;
  * {@code .minecraft/config/simplelocationmarking/}.
  * <p>
  * One JSON file is used per singleplayer world folder or per multiplayer server
- * address, so
- * waypoints never leak between worlds or servers. All methods must be called on
- * the client thread.
+ * address, so waypoints never leak between worlds or servers. All methods must
+ * be called on the client thread.
  */
 public final class WaypointManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -45,7 +44,7 @@ public final class WaypointManager {
     private static Path currentFile;
 
     // Cached dimension id so that per-frame callers do not allocate a new string.
-    private static RegistryKey<World> cachedDimensionKey;
+    private static ResourceKey<Level> cachedDimensionKey;
     private static String cachedDimensionId = "minecraft:overworld";
 
     private WaypointManager() {
@@ -62,7 +61,7 @@ public final class WaypointManager {
     // ------------------------------------------------------------------------------------------
 
     /** Called when the client joins a world or server. */
-    public static void onJoin(MinecraftClient client) {
+    public static void onJoin(Minecraft client) {
         String key = computeStorageKey(client);
         if (!key.equals(currentKey)) {
             load(key);
@@ -84,24 +83,24 @@ public final class WaypointManager {
      * Lazily loads the storage file if a world is active but no join event was
      * observed yet.
      */
-    public static void ensureLoaded(MinecraftClient client) {
-        if (currentKey == null && client.world != null) {
+    public static void ensureLoaded(Minecraft client) {
+        if (currentKey == null && client.level != null) {
             load(computeStorageKey(client));
         }
     }
 
-    private static String computeStorageKey(MinecraftClient client) {
-        IntegratedServer server = client.getServer();
-        if (client.isInSingleplayer() && server != null) {
-            Path root = server.getSavePath(WorldSavePath.ROOT).toAbsolutePath().normalize();
+    private static String computeStorageKey(Minecraft client) {
+        IntegratedServer server = client.getSingleplayerServer();
+        if (client.isLocalServer() && server != null) {
+            Path root = server.getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize();
             Path folder = root.getFileName();
-            String name = folder != null ? folder.toString() : server.getSaveProperties().getLevelName();
+            String name = folder != null ? folder.toString() : server.getWorldData().getLevelName();
             return "singleplayer_" + sanitizeFileName(name);
         }
-        ServerInfo entry = client.getCurrentServerEntry();
-        if (entry != null && entry.address != null && !entry.address.isBlank()) {
+        ServerData entry = client.getCurrentServer();
+        if (entry != null && entry.ip != null && !entry.ip.isBlank()) {
             String prefix = entry.isRealm() ? "realms_" : "multiplayer_";
-            return prefix + sanitizeFileName(entry.address.trim().toLowerCase(Locale.ROOT));
+            return prefix + sanitizeFileName(entry.ip.trim().toLowerCase(Locale.ROOT));
         }
         return "unknown_session";
     }
@@ -226,14 +225,14 @@ public final class WaypointManager {
     }
 
     /**
-     * Returns the identifier string of the world's dimension, cached per dimension
+     * Returns the identifier string of the level's dimension, cached per dimension
      * key.
      */
-    public static String dimensionId(World world) {
-        RegistryKey<World> key = world.getRegistryKey();
+    public static String dimensionId(Level level) {
+        ResourceKey<Level> key = level.dimension();
         if (key != cachedDimensionKey) {
             cachedDimensionKey = key;
-            cachedDimensionId = key.getValue().toString();
+            cachedDimensionId = key.identifier().toString();
         }
         return cachedDimensionId;
     }

@@ -1,8 +1,8 @@
 package com.thaistoanf.simplelocationmarking.gui.widget;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.util.Mth;
 import org.joml.Matrix3x2fStack;
 
 import java.util.Random;
@@ -74,7 +74,7 @@ public final class HexColorPalette {
                     // Hue from the angle around the center, red at the top, going clockwise.
                     float angle = (float) Math.toDegrees(Math.atan2(cy, cx)) + 90.0f;
                     float hue = ((angle % 360.0f) + 360.0f) % 360.0f / 360.0f;
-                    cellColor[index] = MathHelper.hsvToRgb(hue, RING_SATURATION[ring], RING_VALUE[ring]) & 0xFFFFFF;
+                    cellColor[index] = Mth.hsvToRgb(hue, RING_SATURATION[ring], RING_VALUE[ring]) & 0xFFFFFF;
                 }
                 index++;
             }
@@ -100,11 +100,11 @@ public final class HexColorPalette {
     }
 
     public int getWidth() {
-        return MathHelper.ceil(UNIT_WIDTH * size);
+        return Mth.ceil(UNIT_WIDTH * size);
     }
 
     public int getHeight() {
-        return MathHelper.ceil(UNIT_HEIGHT * size);
+        return Mth.ceil(UNIT_HEIGHT * size);
     }
 
     public int getX() {
@@ -211,13 +211,13 @@ public final class HexColorPalette {
     // Rendering
     // ------------------------------------------------------------------------------------------
 
-    public void render(DrawContext context, int mouseX, int mouseY) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         hoveredIndex = cellAt(mouseX, mouseY);
 
-        int scale = Math.max(1, MinecraftClient.getInstance().getWindow().getScaleFactor());
+        int scale = Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
         float f = scale;
 
-        Matrix3x2fStack matrices = context.getMatrices();
+        Matrix3x2fStack matrices = graphics.pose();
         matrices.pushMatrix();
         matrices.scale(1.0f / f, 1.0f / f);
 
@@ -231,15 +231,15 @@ public final class HexColorPalette {
             if (i == selectedIndex || i == hoveredIndex) {
                 continue;
             }
-            fillHex(context, ox + cellX[i] * radius, oy + cellY[i] * radius, cellRadius, 0xFF000000 | cellColor[i]);
+            fillHex(graphics, ox + cellX[i] * radius, oy + cellY[i] * radius, cellRadius, 0xFF000000 | cellColor[i]);
         }
 
         if (hoveredIndex >= 0 && hoveredIndex != selectedIndex) {
             float cx = ox + cellX[hoveredIndex] * radius;
             float cy = oy + cellY[hoveredIndex] * radius;
-            fillHex(context, cx, cy, radius + f * 1.4f, 0x55FFFFFF);
-            fillHex(context, cx, cy, radius + f * 0.6f, 0xFFE8F0FF);
-            fillHex(context, cx, cy, cellRadius, 0xFF000000 | cellColor[hoveredIndex]);
+            fillHex(graphics, cx, cy, radius + f * 1.4f, 0x55FFFFFF);
+            fillHex(graphics, cx, cy, radius + f * 0.6f, 0xFFE8F0FF);
+            fillHex(graphics, cx, cy, cellRadius, 0xFF000000 | cellColor[hoveredIndex]);
         }
 
         if (selectedIndex >= 0) {
@@ -247,11 +247,11 @@ public final class HexColorPalette {
             float cy = oy + cellY[selectedIndex] * radius;
             int selRgb = cellColor[selectedIndex] & 0xFFFFFF;
             // Multi-layered glowing outline around the active hexagon cell
-            fillHex(context, cx, cy, radius + f * 3.2f, 0x4C000000 | selRgb);
-            fillHex(context, cx, cy, radius + f * 2.3f, 0x99FFFFFF);
-            fillHex(context, cx, cy, radius + f * 1.5f, 0xFFFFFFFF);
-            fillHex(context, cx, cy, radius + f * 0.55f, 0xFF0A0C12);
-            fillHex(context, cx, cy, cellRadius, 0xFF000000 | selRgb);
+            fillHex(graphics, cx, cy, radius + f * 3.2f, 0x4C000000 | selRgb);
+            fillHex(graphics, cx, cy, radius + f * 2.3f, 0x99FFFFFF);
+            fillHex(graphics, cx, cy, radius + f * 1.5f, 0xFFFFFFFF);
+            fillHex(graphics, cx, cy, radius + f * 0.55f, 0xFF0A0C12);
+            fillHex(graphics, cx, cy, cellRadius, 0xFF000000 | selRgb);
         }
 
         matrices.popMatrix();
@@ -262,7 +262,7 @@ public final class HexColorPalette {
      * (physical pixel) coordinate space. The middle band is a single rectangle; the top and bottom
      * triangles are drawn as one-pixel scanlines.
      */
-    private static void fillHex(DrawContext context, float cx, float cy, float r, int argb) {
+    private static void fillHex(GuiGraphicsExtractor graphics, float cx, float cy, float r, int argb) {
         if (r <= 0.5f) {
             return;
         }
@@ -272,22 +272,21 @@ public final class HexColorPalette {
         int midTop = Math.round(cy - r * 0.5f);
         int midBottom = Math.round(cy + r * 0.5f);
 
-        context.fill(Math.round(cx - halfWidth), midTop, Math.round(cx + halfWidth), midBottom, argb);
+        graphics.fill(Math.round(cx - halfWidth), midTop, Math.round(cx + halfWidth), midBottom, argb);
 
         for (int row = top; row < midTop; row++) {
             float dy = Math.abs(cy - (row + 0.5f));
             float hw = SQRT3 * (r - dy);
             if (hw > 0.25f) {
-                context.fill(Math.round(cx - hw), row, Math.round(cx + hw), row + 1, argb);
+                graphics.fill(Math.round(cx - hw), row, Math.round(cx + hw), row + 1, argb);
             }
         }
         for (int row = midBottom; row < bottom; row++) {
             float dy = Math.abs((row + 0.5f) - cy);
             float hw = SQRT3 * (r - dy);
             if (hw > 0.25f) {
-                context.fill(Math.round(cx - hw), row, Math.round(cx + hw), row + 1, argb);
+                graphics.fill(Math.round(cx - hw), row, Math.round(cx + hw), row + 1, argb);
             }
         }
     }
 }
-

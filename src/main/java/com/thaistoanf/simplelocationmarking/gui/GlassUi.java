@@ -1,8 +1,8 @@
 package com.thaistoanf.simplelocationmarking.gui;
 
 import com.thaistoanf.simplelocationmarking.util.TextUtil;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.joml.Matrix3x2fStack;
 
 /**
@@ -43,73 +43,73 @@ public final class GlassUi {
     }
 
     /** Renders the subtle dark translucent full-screen overlay over the live game world. */
-    public static void drawScreenBackdrop(DrawContext context, int width, int height) {
-        context.fill(0, 0, width, height, SCREEN_BACKDROP);
+    public static void drawScreenBackdrop(GuiGraphicsExtractor graphics, int width, int height) {
+        graphics.fill(0, 0, width, height, SCREEN_BACKDROP);
     }
 
     /**
      * Renders the centered Translucent Glass Main Panel with a top header bar and crisp 1px border.
      */
-    public static void drawMainPanel(DrawContext context, int left, int top, int right, int bottom, int headerHeight) {
+    public static void drawMainPanel(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int headerHeight) {
         // Outer subtle drop shadow
-        context.fill(left - 2, top - 2, right + 2, bottom + 2, 0x38000000);
+        graphics.fill(left - 2, top - 2, right + 2, bottom + 2, 0x38000000);
         // Main glass panel body
-        context.fill(left, top, right, bottom, MAIN_PANEL_BG);
+        graphics.fill(left, top, right, bottom, MAIN_PANEL_BG);
         // Top header bar
         int headerBottom = top + headerHeight;
-        context.fill(left, top, right, headerBottom, HEADER_BG);
+        graphics.fill(left, top, right, headerBottom, HEADER_BG);
         // Top subtle specular highlight
-        context.fill(left + 1, top + 1, right - 1, top + 2, 0x16FFFFFF);
+        graphics.fill(left + 1, top + 1, right - 1, top + 2, 0x16FFFFFF);
         // Header bottom separator line
-        context.fill(left, headerBottom - 1, right, headerBottom, MAIN_PANEL_BORDER);
+        graphics.fill(left, headerBottom - 1, right, headerBottom, MAIN_PANEL_BORDER);
         // Crisp 1px outer border
-        drawBorder(context, left - 1, top - 1, right + 1, bottom + 1, MAIN_PANEL_BORDER);
+        drawBorder(graphics, left - 1, top - 1, right + 1, bottom + 1, MAIN_PANEL_BORDER);
     }
 
     /**
      * Renders a recessed translucent dark sub-panel with a crisp 1px border.
      */
-    public static void drawSubPanel(DrawContext context, int left, int top, int right, int bottom) {
-        context.fill(left, top, right, bottom, SUB_PANEL_BG);
-        drawBorder(context, left, top, right, bottom, SUB_PANEL_BORDER);
+    public static void drawSubPanel(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom) {
+        graphics.fill(left, top, right, bottom, SUB_PANEL_BG);
+        drawBorder(graphics, left, top, right, bottom, SUB_PANEL_BORDER);
     }
 
     /**
      * Renders a translucent pill box with a 1px border.
      */
-    public static void drawPill(DrawContext context, int left, int top, int right, int bottom, int fillColor, int borderColor) {
-        context.fill(left, top, right, bottom, fillColor);
-        drawBorder(context, left, top, right, bottom, borderColor);
+    public static void drawPill(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int fillColor, int borderColor) {
+        graphics.fill(left, top, right, bottom, fillColor);
+        drawBorder(graphics, left, top, right, bottom, borderColor);
     }
 
     /**
      * Draws a 1px rectangle border inside the bounds {@code [left, top, right, bottom]}.
      */
-    public static void drawBorder(DrawContext context, int left, int top, int right, int bottom, int color) {
+    public static void drawBorder(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int color) {
         if (right <= left || bottom <= top) {
             return;
         }
-        context.fill(left, top, right, top + 1, color);
-        context.fill(left, bottom - 1, right, bottom, color);
+        graphics.fill(left, top, right, top + 1, color);
+        graphics.fill(left, bottom - 1, right, bottom, color);
         if (bottom - top > 2) {
-            context.fill(left, top + 1, left + 1, bottom - 1, color);
-            context.fill(right - 1, top + 1, right, bottom - 1, color);
+            graphics.fill(left, top + 1, left + 1, bottom - 1, color);
+            graphics.fill(right - 1, top + 1, right, bottom - 1, color);
         }
     }
 
     /**
      * Renders a glowing colored square swatch with a 1px dark/white border.
      */
-    public static void drawGlowingSwatch(DrawContext context, int x, int y, int size, int rgb) {
+    public static void drawGlowingSwatch(GuiGraphicsExtractor graphics, int x, int y, int size, int rgb) {
         int cleanRgb = rgb & 0xFFFFFF;
         // Soft outer colored glow
-        context.fill(x - 2, y - 2, x + size + 2, y + size + 2, 0x38000000 | cleanRgb);
+        graphics.fill(x - 2, y - 2, x + size + 2, y + size + 2, 0x38000000 | cleanRgb);
         // Crisp 1px outer frame (subtle light/white border)
-        drawBorder(context, x - 1, y - 1, x + size + 1, y + size + 1, 0xCCFFFFFF);
+        drawBorder(graphics, x - 1, y - 1, x + size + 1, y + size + 1, 0xCCFFFFFF);
         // Solid color core
-        context.fill(x, y, x + size, y + size, 0xFF000000 | cleanRgb);
+        graphics.fill(x, y, x + size, y + size, 0xFF000000 | cleanRgb);
         // Subtle top-half specular sheen
-        context.fill(x + 1, y + 1, x + size - 1, y + 2, 0x45FFFFFF);
+        graphics.fill(x + 1, y + 1, x + size - 1, y + 2, 0x45FFFFFF);
     }
 
     /**
@@ -139,7 +139,7 @@ public final class GlassUi {
      * Renders a live preview of both the compact default HUD badge and the expanded hover pill
      * inside the Add/Edit screen's preview panel.
      */
-    public static void drawLiveMarkerPreview(DrawContext context, TextRenderer textRenderer,
+    public static void drawLiveMarkerPreview(GuiGraphicsExtractor graphics, Font font,
                                              String rawName, int rgb,
                                              int boxLeft, int boxTop, int boxRight, int boxBottom) {
         int cleanRgb = rgb & 0xFFFFFF;
@@ -154,49 +154,48 @@ public final class GlassUi {
 
         int centerX = (boxLeft + boxRight) / 2;
         int maxPillWidth = Math.max(32, (boxRight - boxLeft) - 14);
-        String fittedName = textRenderer.trimToWidth(display, maxPillWidth - 10);
+        String fittedName = font.plainSubstrByWidth(display, maxPillWidth - 10);
         if (fittedName.length() < display.length() && fittedName.length() > 2) {
-            fittedName = textRenderer.trimToWidth(display, maxPillWidth - 16) + "..";
+            fittedName = font.plainSubstrByWidth(display, maxPillWidth - 16) + "..";
         }
 
         // 1. Compact Default Badge (16x16) near top of preview area
         int badgeSize = 16;
-        int initialW = textRenderer.getWidth(initial);
+        int initialW = font.width(initial);
         int compactW = Math.max(badgeSize, initialW + 8);
         int cLeft = centerX - compactW / 2;
         int cTop = boxTop + 6;
         int cRight = cLeft + compactW;
         int cBottom = cTop + badgeSize;
 
-        context.fill(cLeft, cTop, cRight, cBottom, HUD_BADGE_BG_DEFAULT);
-        drawBorder(context, cLeft - 1, cTop - 1, cRight + 1, cBottom + 1, accent);
-        context.fill(cLeft, cTop, cRight, cTop + 2, accent);
-        context.drawText(textRenderer, initial, centerX - (initialW - 1) / 2, cTop + 5, brightText, true);
+        graphics.fill(cLeft, cTop, cRight, cBottom, HUD_BADGE_BG_DEFAULT);
+        drawBorder(graphics, cLeft - 1, cTop - 1, cRight + 1, cBottom + 1, accent);
+        graphics.fill(cLeft, cTop, cRight, cTop + 2, accent);
+        graphics.text(font, initial, centerX - (initialW - 1) / 2, cTop + 5, brightText, true);
 
         // 2. Expanded Hover Pill + Distance Label below it
-        int nameW = textRenderer.getWidth(fittedName);
+        int nameW = font.width(fittedName);
         int expandedW = Math.min(maxPillWidth, Math.max(badgeSize, nameW + 10));
         int eLeft = centerX - expandedW / 2;
         int eTop = cBottom + 8;
         int eRight = eLeft + expandedW;
         int eBottom = eTop + badgeSize;
 
-        context.fill(eLeft, eTop, eRight, eBottom, HUD_BADGE_BG_HOVER);
-        drawBorder(context, eLeft - 1, eTop - 1, eRight + 1, eBottom + 1, accent);
-        context.fill(eLeft, eTop, eRight, eTop + 2, accent);
-        context.drawText(textRenderer, fittedName, centerX - (nameW - 1) / 2, eTop + 5, 0xFFFFFFFF, true);
+        graphics.fill(eLeft, eTop, eRight, eBottom, HUD_BADGE_BG_HOVER);
+        drawBorder(graphics, eLeft - 1, eTop - 1, eRight + 1, eBottom + 1, accent);
+        graphics.fill(eLeft, eTop, eRight, eTop + 2, accent);
+        graphics.text(font, fittedName, centerX - (nameW - 1) / 2, eTop + 5, 0xFFFFFFFF, true);
 
         // 3. Scaled Distance Pill (0.75f) below expanded pill
         String sampleDist = "125m";
-        int distW = textRenderer.getWidth(sampleDist);
-        Matrix3x2fStack matrices = context.getMatrices();
+        int distW = font.width(sampleDist);
+        Matrix3x2fStack matrices = graphics.pose();
         matrices.pushMatrix();
         matrices.translate(centerX, eBottom + 3.0f);
         matrices.scale(0.75f, 0.75f);
         int dLeft = -distW / 2;
-        context.fill(dLeft - 3, -1, dLeft + distW + 2, 9, HUD_DISTANCE_BG);
-        context.drawText(textRenderer, sampleDist, dLeft, 0, HUD_DISTANCE_TEXT, true);
+        graphics.fill(dLeft - 3, -1, dLeft + distW + 2, 9, HUD_DISTANCE_BG);
+        graphics.text(font, sampleDist, dLeft, 0, HUD_DISTANCE_TEXT, true);
         matrices.popMatrix();
     }
 }
-

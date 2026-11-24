@@ -3,19 +3,21 @@ package com.thaistoanf.simplelocationmarking.gui;
 import com.thaistoanf.simplelocationmarking.gui.widget.HexColorPalette;
 import com.thaistoanf.simplelocationmarking.waypoint.Waypoint;
 import com.thaistoanf.simplelocationmarking.waypoint.WaypointManager;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.input.KeyInput;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Locale;
+import java.util.function.Consumer;
 
 /**
  * Screen for editing an existing waypoint.
@@ -36,11 +38,11 @@ public final class EditWaypointScreen extends Screen {
     private String draftY;
     private String draftZ;
 
-    private TextFieldWidget nameField;
-    private TextFieldWidget xField;
-    private TextFieldWidget yField;
-    private TextFieldWidget zField;
-    private ButtonWidget submitButton;
+    private EditBox nameField;
+    private EditBox xField;
+    private EditBox yField;
+    private EditBox zField;
+    private Button submitButton;
 
     private int panelLeft;
     private int panelTop;
@@ -64,7 +66,7 @@ public final class EditWaypointScreen extends Screen {
     private int coordsFieldY;
 
     public EditWaypointScreen(LocationListScreen parent, Waypoint waypoint) {
-        super(Text.translatable("simplelocationmarking.screen.edit.title"));
+        super(Component.translatable("simplelocationmarking.screen.edit.title"));
         this.parent = parent;
         this.waypoint = waypoint;
         this.draftName = waypoint.name != null ? waypoint.name : "";
@@ -95,23 +97,23 @@ public final class EditWaypointScreen extends Screen {
         namePanelTop = panelTop + HEADER_HEIGHT + 5;
         namePanelBottom = namePanelTop + 36;
         int nameFieldY = namePanelTop + 15;
-        nameField = new TextFieldWidget(
-                this.textRenderer,
+        nameField = new EditBox(
+                this.font,
                 innerLeft,
                 nameFieldY,
                 innerWidth,
                 16,
-                Text.translatable("simplelocationmarking.field.name")
+                Component.translatable("simplelocationmarking.field.name")
         );
         nameField.setMaxLength(48);
         nameField.setEditable(true);
-        nameField.setText(draftName);
-        nameField.setPlaceholder(Text.translatable("simplelocationmarking.field.name.placeholder"));
-        nameField.setChangedListener(text -> {
+        nameField.setValue(draftName);
+        nameField.setHint(Component.translatable("simplelocationmarking.field.name.placeholder"));
+        nameField.setResponder(text -> {
             draftName = text;
             updateSubmitButtonState();
         });
-        addDrawableChild(nameField);
+        addRenderableWidget(nameField);
 
         // 2. Editable X, Y, Z integer coordinate sub-panel
         coordsPanelTop = namePanelBottom + 4;
@@ -141,9 +143,9 @@ public final class EditWaypointScreen extends Screen {
             updateSubmitButtonState();
         });
 
-        addDrawableChild(xField);
-        addDrawableChild(yField);
-        addDrawableChild(zField);
+        addRenderableWidget(xField);
+        addRenderableWidget(yField);
+        addRenderableWidget(zField);
 
         // 3. Hexagon Color Palette & Live Preview sub-panel
         int buttonY = panelBottom - 25;
@@ -163,7 +165,7 @@ public final class EditWaypointScreen extends Screen {
         int paletteAreaWidth = Math.max(70, (previewLeft - 8) - innerLeft);
         float maxRadiusH = availableHeight / HexColorPalette.UNIT_HEIGHT;
         float maxRadiusW = paletteAreaWidth / HexColorPalette.UNIT_WIDTH;
-        float hexRadius = MathHelper.clamp(Math.min(maxRadiusH, maxRadiusW), 2.8f, 5.6f);
+        float hexRadius = Mth.clamp(Math.min(maxRadiusH, maxRadiusW), 2.8f, 5.6f);
         palette.setLayout(0, 0, hexRadius);
         int paletteX = innerLeft + (paletteAreaWidth - palette.getWidth()) / 2;
         int paletteY = contentTop + (availableHeight - palette.getHeight()) / 2;
@@ -172,31 +174,59 @@ public final class EditWaypointScreen extends Screen {
         // 4. Bottom buttons: Submit & Cancel
         int btnGap = 8;
         int btnWidth = ((subRight - subLeft) - btnGap) / 2;
-        submitButton = addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("simplelocationmarking.button.submit"),
+        submitButton = addRenderableWidget(Button.builder(
+                        Component.translatable("simplelocationmarking.button.submit"),
                         btn -> submitAndClose())
-                .dimensions(subLeft, buttonY, btnWidth, 20)
+                .bounds(subLeft, buttonY, btnWidth, 20)
                 .build());
 
-        addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("simplelocationmarking.button.cancel"),
-                        btn -> close())
-                .dimensions(subLeft + btnWidth + btnGap, buttonY, (subRight - subLeft) - btnWidth - btnGap, 20)
+        addRenderableWidget(Button.builder(
+                        Component.translatable("simplelocationmarking.button.cancel"),
+                        btn -> onClose())
+                .bounds(subLeft + btnWidth + btnGap, buttonY, (subRight - subLeft) - btnWidth - btnGap, 20)
                 .build());
 
         setInitialFocus(nameField);
         updateSubmitButtonState();
     }
 
-    private TextFieldWidget createEditableCoordField(int x, int y, int width, String initial,
-                                                     String translationKey, java.util.function.Consumer<String> listener) {
-        TextFieldWidget field = new TextFieldWidget(this.textRenderer, x, y, width, 16, Text.translatable(translationKey));
+    private EditBox createEditableCoordField(int x, int y, int width, String initial,
+                                             String translationKey, Consumer<String> listener) {
+        EditBox field = new IntEditBox(this.font, x, y, width, 16, Component.translatable(translationKey));
         field.setMaxLength(11);
         field.setEditable(true);
-        field.setTextPredicate(EditWaypointScreen::isPartialInteger);
-        field.setText(initial);
-        field.setChangedListener(listener);
+        field.setValue(initial);
+        field.setResponder(listener);
         return field;
+    }
+
+    /**
+     * EditBox that restricts typed or pasted input to optional leading minus and up to 9 digits.
+     */
+    private static final class IntEditBox extends EditBox {
+        private IntEditBox(Font font, int x, int y, int width, int height, Component message) {
+            super(font, x, y, width, height, message);
+        }
+
+        @Override
+        public void insertText(String text) {
+            if (text == null || text.isEmpty()) {
+                return;
+            }
+            for (int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if ((c < '0' || c > '9') && c != '-') {
+                    return;
+                }
+            }
+            String before = getValue();
+            int beforeCursor = getCursorPosition();
+            super.insertText(text);
+            if (!isPartialInteger(getValue())) {
+                setValue(before);
+                moveCursorTo(beforeCursor, false);
+            }
+        }
     }
 
     private static boolean isPartialInteger(String s) {
@@ -235,10 +265,10 @@ public final class EditWaypointScreen extends Screen {
         if (submitButton == null) {
             return;
         }
-        boolean validName = nameField != null && !nameField.getText().trim().isEmpty();
-        boolean validX = xField != null && tryParseInt(xField.getText()) != null;
-        boolean validY = yField != null && tryParseInt(yField.getText()) != null;
-        boolean validZ = zField != null && tryParseInt(zField.getText()) != null;
+        boolean validName = nameField != null && !nameField.getValue().trim().isEmpty();
+        boolean validX = xField != null && tryParseInt(xField.getValue()) != null;
+        boolean validY = yField != null && tryParseInt(yField.getValue()) != null;
+        boolean validZ = zField != null && tryParseInt(zField.getValue()) != null;
         submitButton.active = validName && validX && validY && validZ;
     }
 
@@ -246,10 +276,10 @@ public final class EditWaypointScreen extends Screen {
         if (nameField == null || xField == null || yField == null || zField == null) {
             return;
         }
-        String trimmedName = nameField.getText().trim();
-        Integer parsedX = tryParseInt(xField.getText());
-        Integer parsedY = tryParseInt(yField.getText());
-        Integer parsedZ = tryParseInt(zField.getText());
+        String trimmedName = nameField.getValue().trim();
+        Integer parsedX = tryParseInt(xField.getValue());
+        Integer parsedY = tryParseInt(yField.getValue());
+        Integer parsedZ = tryParseInt(zField.getValue());
         if (trimmedName.isEmpty() || parsedX == null || parsedY == null || parsedZ == null) {
             return;
         }
@@ -263,79 +293,79 @@ public final class EditWaypointScreen extends Screen {
         WaypointManager.markChanged();
         parent.reloadWaypoints();
         parent.setSelected(waypoint);
-        close();
+        onClose();
     }
 
     @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        GlassUi.drawScreenBackdrop(context, this.width, this.height);
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        GlassUi.drawScreenBackdrop(graphics, this.width, this.height);
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         int centerX = this.width / 2;
         int innerLeft = subLeft + 8;
 
         // 1. Main Translucent Glass Panel + Header Bar
-        GlassUi.drawMainPanel(context, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
-        context.drawCenteredTextWithShadow(this.textRenderer, this.title, centerX, panelTop + 8, 0xFFFFFFFF);
+        GlassUi.drawMainPanel(graphics, panelLeft, panelTop, panelRight, panelBottom, HEADER_HEIGHT);
+        graphics.centeredText(this.font, this.title, centerX, panelTop + 8, 0xFFFFFFFF);
 
         // 2. Name Sub-Panel
-        GlassUi.drawSubPanel(context, subLeft, namePanelTop, subRight, namePanelBottom);
-        context.drawTextWithShadow(
-                this.textRenderer,
-                Text.translatable("simplelocationmarking.field.name"),
+        GlassUi.drawSubPanel(graphics, subLeft, namePanelTop, subRight, namePanelBottom);
+        graphics.text(
+                this.font,
+                Component.translatable("simplelocationmarking.field.name"),
                 innerLeft,
                 namePanelTop + 4,
                 0xFFD0D8EC
         );
 
         // 3. Coordinates Sub-Panel
-        GlassUi.drawSubPanel(context, subLeft, coordsPanelTop, subRight, coordsPanelBottom);
-        context.drawTextWithShadow(
-                this.textRenderer,
-                Text.translatable("simplelocationmarking.field.coordinates"),
+        GlassUi.drawSubPanel(graphics, subLeft, coordsPanelTop, subRight, coordsPanelBottom);
+        graphics.text(
+                this.font,
+                Component.translatable("simplelocationmarking.field.coordinates"),
                 innerLeft,
                 coordsPanelTop + 4,
                 0xFFD0D8EC
         );
         int prefixY = coordsFieldY + 4;
-        context.drawTextWithShadow(this.textRenderer, Text.translatable("simplelocationmarking.field.x"), xField.getX() - 10, prefixY, 0xFFFF8080);
-        context.drawTextWithShadow(this.textRenderer, Text.translatable("simplelocationmarking.field.y"), yField.getX() - 10, prefixY, 0xFF80FF98);
-        context.drawTextWithShadow(this.textRenderer, Text.translatable("simplelocationmarking.field.z"), zField.getX() - 10, prefixY, 0xFF80B8FF);
+        graphics.text(this.font, Component.translatable("simplelocationmarking.field.x"), xField.getX() - 10, prefixY, 0xFFFF8080);
+        graphics.text(this.font, Component.translatable("simplelocationmarking.field.y"), yField.getX() - 10, prefixY, 0xFF80FF98);
+        graphics.text(this.font, Component.translatable("simplelocationmarking.field.z"), zField.getX() - 10, prefixY, 0xFF80B8FF);
 
         // 4. Color Palette & Live Preview Sub-Panel
-        GlassUi.drawSubPanel(context, subLeft, colorPanelTop, subRight, colorPanelBottom);
-        context.drawTextWithShadow(
-                this.textRenderer,
-                Text.translatable("simplelocationmarking.field.color"),
+        GlassUi.drawSubPanel(graphics, subLeft, colorPanelTop, subRight, colorPanelBottom);
+        graphics.text(
+                this.font,
+                Component.translatable("simplelocationmarking.field.color"),
                 innerLeft,
                 colorPanelTop + 5,
                 0xFFD0D8EC
         );
 
         // Hexagon honeycomb palette
-        palette.render(context, mouseX, mouseY);
+        palette.render(graphics, mouseX, mouseY);
 
         // Live Color & Marker Preview Box on the right side of the color sub-panel
-        renderPreviewBox(context);
+        renderPreviewBox(graphics);
 
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(graphics, mouseX, mouseY, a);
     }
 
-    private void renderPreviewBox(DrawContext context) {
+    private void renderPreviewBox(GuiGraphicsExtractor graphics) {
         int selectedRgb = palette.getSelectedColor() & 0xFFFFFF;
-        GlassUi.drawPill(context, previewLeft, previewTop, previewRight, previewBottom, 0xB010131C, 0xFF2E364C);
+        GlassUi.drawPill(graphics, previewLeft, previewTop, previewRight, previewBottom, 0xB010131C, 0xFF2E364C);
 
         int pCenterX = (previewLeft + previewRight) / 2;
-        Text previewLabel = Text.translatable("simplelocationmarking.field.preview");
-        context.drawCenteredTextWithShadow(this.textRenderer, previewLabel, pCenterX, previewTop + 4, 0xFFB8C4DC);
+        Component previewLabel = Component.translatable("simplelocationmarking.field.preview");
+        graphics.centeredText(this.font, previewLabel, pCenterX, previewTop + 4, 0xFFB8C4DC);
 
         // Live HUD Marker preview (compact badge + expanded hover pill + distance pill)
-        String previewName = (nameField != null) ? nameField.getText() : draftName;
+        String previewName = (nameField != null) ? nameField.getValue() : draftName;
         GlassUi.drawLiveMarkerPreview(
-                context,
-                this.textRenderer,
+                graphics,
+                this.font,
                 previewName,
                 selectedRgb,
                 previewLeft,
@@ -346,45 +376,45 @@ public final class EditWaypointScreen extends Screen {
 
         // Glowing swatch + #RRGGBB code at the bottom of the preview box
         String hexCode = String.format(Locale.ROOT, "#%06X", selectedRgb);
-        int hexW = this.textRenderer.getWidth(hexCode);
+        int hexW = this.font.width(hexCode);
         int swatchSize = 9;
         int totalW = swatchSize + 5 + hexW;
         int startX = pCenterX - totalW / 2;
         int bottomY = previewBottom - 13;
-        GlassUi.drawGlowingSwatch(context, startX, bottomY, swatchSize, selectedRgb);
-        context.drawTextWithShadow(this.textRenderer, hexCode, startX + swatchSize + 5, bottomY + 1, 0xFFE4ECFF);
+        GlassUi.drawGlowingSwatch(graphics, startX, bottomY, swatchSize, selectedRgb);
+        graphics.text(this.font, hexCode, startX + swatchSize + 5, bottomY + 1, 0xFFE4ECFF);
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
-        if (palette.mouseClicked(click.x(), click.y(), click.button())) {
-            if (client != null) {
-                client.getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.2f));
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubled) {
+        if (palette.mouseClicked(event.x(), event.y(), event.button())) {
+            if (minecraft != null) {
+                minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.2f));
             }
             return true;
         }
-        return super.mouseClicked(click, doubled);
+        return super.mouseClicked(event, doubled);
     }
 
     @Override
-    public boolean keyPressed(KeyInput input) {
-        int keyCode = input.getKeycode();
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
         if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && submitButton != null && submitButton.active) {
             submitAndClose();
             return true;
         }
-        return super.keyPressed(input);
+        return super.keyPressed(event);
     }
 
     @Override
-    public void close() {
-        if (client != null) {
-            client.setScreen(parent);
+    public void onClose() {
+        if (minecraft != null) {
+            minecraft.setScreen(parent);
         }
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 }

@@ -2,13 +2,11 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.thaistoanf.simplelocationmarking.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "client": [
-    "InGameHudMixin",
-    "WorldRendererMixin"
+    "GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   }
 }
-

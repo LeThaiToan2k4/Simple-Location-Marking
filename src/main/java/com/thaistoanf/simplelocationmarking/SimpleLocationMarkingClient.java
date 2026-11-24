@@ -1,17 +1,19 @@
 package com.thaistoanf.simplelocationmarking;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.thaistoanf.simplelocationmarking.gui.LocationListScreen;
 import com.thaistoanf.simplelocationmarking.render.ProjectionState;
 import com.thaistoanf.simplelocationmarking.render.WaypointHudRenderer;
 import com.thaistoanf.simplelocationmarking.waypoint.WaypointManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.util.Identifier;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,29 +26,32 @@ public final class SimpleLocationMarkingClient implements ClientModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("Simple Location Marking");
 
     /** Translation key: {@code key.category.simplelocationmarking.main}. */
-    public static final KeyBinding.Category KEY_CATEGORY = KeyBinding.Category.create(id("main"));
+    public static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(id("main"));
 
-    /** Shared HUD marker renderer invoked before the vanilla crosshair via {@code InGameHudMixin}. */
-    public static final WaypointHudRenderer HUD_RENDERER = new WaypointHudRenderer();
-
-    private static KeyBinding openScreenKey;
+    private static KeyMapping openScreenKey;
 
     public static Identifier id(String path) {
-        return Identifier.of(MOD_ID, path);
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 
     @Override
     public void onInitializeClient() {
-        openScreenKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        openScreenKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.simplelocationmarking.open",
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_P,
                 KEY_CATEGORY
         ));
 
+        HudElementRegistry.attachElementBefore(
+                VanillaHudElements.CROSSHAIR,
+                id("waypoints"),
+                new WaypointHudRenderer()
+        );
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (openScreenKey.wasPressed()) {
-                if (client.player != null && client.world != null && client.currentScreen == null) {
+            while (openScreenKey.consumeClick()) {
+                if (client.player != null && client.level != null && client.screen == null) {
                     WaypointManager.ensureLoaded(client);
                     client.setScreen(new LocationListScreen());
                 }
@@ -64,12 +69,11 @@ public final class SimpleLocationMarkingClient implements ClientModInitializer {
         LOGGER.info("Simple Location Marking initialized");
     }
 
-    private static void runOnClientThread(MinecraftClient client, Runnable task) {
-        if (client.isOnThread()) {
+    private static void runOnClientThread(Minecraft client, Runnable task) {
+        if (client.isSameThread()) {
             task.run();
         } else {
             client.execute(task);
         }
     }
 }
-

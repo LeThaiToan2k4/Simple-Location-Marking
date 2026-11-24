@@ -1,6 +1,7 @@
 package com.thaistoanf.simplelocationmarking.waypoint;
 
 import com.thaistoanf.simplelocationmarking.util.TextUtil;
+import net.minecraft.client.gui.Font;
 
 import java.util.UUID;
 
@@ -87,18 +88,18 @@ public final class Waypoint {
         return cachedInitial;
     }
 
-    public int displayNameWidth(net.minecraft.client.font.TextRenderer renderer) {
+    public int displayNameWidth(Font font) {
         refreshNameCache();
         if (cachedDisplayNameWidth < 0) {
-            cachedDisplayNameWidth = renderer.getWidth(cachedDisplayName);
+            cachedDisplayNameWidth = font.width(cachedDisplayName);
         }
         return cachedDisplayNameWidth;
     }
 
-    public int initialWidth(net.minecraft.client.font.TextRenderer renderer) {
+    public int initialWidth(Font font) {
         refreshNameCache();
         if (cachedInitialWidth < 0) {
-            cachedInitialWidth = renderer.getWidth(cachedInitial);
+            cachedInitialWidth = font.width(cachedInitial);
         }
         return cachedInitialWidth;
     }
@@ -118,9 +119,9 @@ public final class Waypoint {
     }
 
     /** Width of the last value returned by {@link #distanceText(double)}. */
-    public int distanceWidth(net.minecraft.client.font.TextRenderer renderer) {
+    public int distanceWidth(Font font) {
         if (cachedDistanceWidth < 0) {
-            cachedDistanceWidth = renderer.getWidth(cachedDistanceText);
+            cachedDistanceWidth = font.width(cachedDistanceText);
         }
         return cachedDistanceWidth;
     }
@@ -133,4 +134,3 @@ public final class Waypoint {
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 }
-

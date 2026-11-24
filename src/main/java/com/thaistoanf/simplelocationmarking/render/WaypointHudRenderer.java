@@ -3,12 +3,13 @@ package com.thaistoanf.simplelocationmarking.render;
 import com.thaistoanf.simplelocationmarking.gui.GlassUi;
 import com.thaistoanf.simplelocationmarking.waypoint.Waypoint;
 import com.thaistoanf.simplelocationmarking.waypoint.WaypointManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.world.ClientWorld;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -24,7 +25,7 @@ import java.util.List;
  * waypoints several kilometers away (beyond Vanilla's far clip plane) are never clipped and
  * render at the exact same compact screen-space size as nearby waypoints.
  */
-public final class WaypointHudRenderer {
+public final class WaypointHudRenderer implements HudElement {
     /** Crosshair must be within this angle (degrees) of a waypoint to expand it. */
     private static final double HOVER_ANGLE_DEGREES = 3.0;
     private static final float HOVER_COS_THRESHOLD = (float) Math.cos(Math.toRadians(HOVER_ANGLE_DEGREES));
@@ -50,11 +51,12 @@ public final class WaypointHudRenderer {
     private double[] distance = new double[32];
     private int count;
 
-    public void render(DrawContext context, RenderTickCounter tickCounter) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        ClientPlayerEntity player = client.player;
-        ClientWorld world = client.world;
-        if (player == null || world == null || client.options.hudHidden || !ProjectionState.isValid()) {
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
+        Minecraft client = Minecraft.getInstance();
+        LocalPlayer player = client.player;
+        ClientLevel level = client.level;
+        if (player == null || level == null || client.options.hideGui || !ProjectionState.isValid()) {
             return;
         }
         List<Waypoint> waypoints = WaypointManager.all();
@@ -62,9 +64,9 @@ public final class WaypointHudRenderer {
             return;
         }
 
-        String dimension = WaypointManager.dimensionId(world);
-        int width = context.getScaledWindowWidth();
-        int height = context.getScaledWindowHeight();
+        String dimension = WaypointManager.dimensionId(level);
+        int width = graphics.guiWidth();
+        int height = graphics.guiHeight();
         float centerX = width * 0.5f;
         float centerY = height * 0.5f;
 
@@ -80,8 +82,8 @@ public final class WaypointHudRenderer {
         double py = player.getY();
         double pz = player.getZ();
 
-        TextRenderer textRenderer = client.textRenderer;
-        float step = tickCounter.getDynamicDeltaTicks() * EXPAND_SPEED_PER_TICK;
+        Font font = client.font;
+        float step = deltaTracker.getRealtimeDeltaTicks() * EXPAND_SPEED_PER_TICK;
 
         // ---- 1. Project normalized direction vectors onto the 2D HUD ----
         count = 0;
@@ -141,7 +143,7 @@ public final class WaypointHudRenderer {
             // Angular test between the camera forward vector and the normalized waypoint direction.
             float score = nx * fx + ny * fy + nz * fz;
             // Also accept the crosshair resting directly on the (collapsed) badge.
-            float halfBadge = Math.max(BOX_HEIGHT, waypoint.initialWidth(textRenderer) + COMPACT_PADDING_X * 2) * 0.5f + 1.0f;
+            float halfBadge = Math.max(BOX_HEIGHT, waypoint.initialWidth(font) + COMPACT_PADDING_X * 2) * 0.5f + 1.0f;
             if (Math.abs(sx - centerX) <= halfBadge && Math.abs(sy - centerY) <= BOX_HEIGHT * 0.5f + 1.0f) {
                 score = Math.max(score, 1.0f);
             }
@@ -192,10 +194,10 @@ public final class WaypointHudRenderer {
                 hoveredIndex = i;
                 continue;
             }
-            drawMarker(context, textRenderer, visible[i], screenX[i], screenY[i], distance[i]);
+            drawMarker(graphics, font, visible[i], screenX[i], screenY[i], distance[i]);
         }
         if (hoveredIndex >= 0) {
-            drawMarker(context, textRenderer, visible[hoveredIndex], screenX[hoveredIndex], screenY[hoveredIndex], distance[hoveredIndex]);
+            drawMarker(graphics, font, visible[hoveredIndex], screenX[hoveredIndex], screenY[hoveredIndex], distance[hoveredIndex]);
         }
 
         // Release references so removed waypoints can be garbage collected.
@@ -204,15 +206,15 @@ public final class WaypointHudRenderer {
         }
     }
 
-    private static void drawMarker(DrawContext context, TextRenderer textRenderer, Waypoint waypoint,
+    private static void drawMarker(GuiGraphicsExtractor graphics, Font font, Waypoint waypoint,
                                    float sx, float sy, double distanceValue) {
         int cx = Math.round(sx);
         int cy = Math.round(sy);
 
         float t = smoothstep(waypoint.hoverProgress);
-        int initialWidth = waypoint.initialWidth(textRenderer);
+        int initialWidth = waypoint.initialWidth(font);
         int collapsedWidth = Math.max(BOX_HEIGHT, initialWidth + COMPACT_PADDING_X * 2);
-        int expandedWidth = Math.max(collapsedWidth, waypoint.displayNameWidth(textRenderer) + EXPANDED_PADDING_X * 2);
+        int expandedWidth = Math.max(collapsedWidth, waypoint.displayNameWidth(font) + EXPANDED_PADDING_X * 2);
         int boxWidth = Math.round(collapsedWidth + (expandedWidth - collapsedWidth) * t);
 
         int left = cx - boxWidth / 2;
@@ -226,11 +228,11 @@ public final class WaypointHudRenderer {
         // Interpolate dark glass background from 0xA6101218 (default) to 0xBF101218 (hovered)
         int bgAlpha = Math.round(0xA6 + (0xBF - 0xA6) * t);
         int glassBg = (bgAlpha << 24) | 0x101218;
-        context.fill(left, top, right, bottom, glassBg);
+        graphics.fill(left, top, right, bottom, glassBg);
 
         // Crisp 1px outer border + 2px top accent bar using the waypoint's selected RGB color
-        GlassUi.drawBorder(context, left - 1, top - 1, right + 1, bottom + 1, accentColor);
-        context.fill(left, top, right, top + 2, accentColor);
+        GlassUi.drawBorder(graphics, left - 1, top - 1, right + 1, bottom + 1, accentColor);
+        graphics.fill(left, top, right, top + 2, accentColor);
 
         int textY = top + (BOX_HEIGHT + 2 - 8) / 2; // centered below the 2px top accent bar
         int brightInitialRgb = GlassUi.brightenForText(rgb);
@@ -239,28 +241,28 @@ public final class WaypointHudRenderer {
         if (letterAlpha > 0.02f) {
             int color = alpha(letterAlpha) | brightInitialRgb;
             // Glyph advance includes one trailing pixel of spacing; subtract it to center visually.
-            context.drawText(textRenderer, waypoint.initial(), cx - (initialWidth - 1) / 2, textY, color, true);
+            graphics.text(font, waypoint.initial(), cx - (initialWidth - 1) / 2, textY, color, true);
         }
 
         float nameAlpha = clamp01(t * 2.0f - 1.0f);
         if (nameAlpha > 0.02f) {
-            int nameWidth = waypoint.displayNameWidth(textRenderer);
+            int nameWidth = waypoint.displayNameWidth(font);
             int color = alpha(nameAlpha) | 0xFFFFFF;
-            context.enableScissor(left + 1, top + 2, right - 1, bottom - 1);
-            context.drawText(textRenderer, waypoint.displayName(), cx - (nameWidth - 1) / 2, textY, color, true);
-            context.disableScissor();
+            graphics.enableScissor(left + 1, top + 2, right - 1, bottom - 1);
+            graphics.text(font, waypoint.displayName(), cx - (nameWidth - 1) / 2, textY, color, true);
+            graphics.disableScissor();
         }
 
         // Distance label below marker inside a smaller translucent dark pill (0x80000000, scale 0.75f, 0xFFE0E0E0)
         String distanceText = waypoint.distanceText(distanceValue);
-        int distanceWidth = waypoint.distanceWidth(textRenderer);
-        Matrix3x2fStack matrices = context.getMatrices();
+        int distanceWidth = waypoint.distanceWidth(font);
+        Matrix3x2fStack matrices = graphics.pose();
         matrices.pushMatrix();
         matrices.translate(cx, bottom + 3.0f);
         matrices.scale(DISTANCE_SCALE, DISTANCE_SCALE);
         int dLeft = -distanceWidth / 2;
-        context.fill(dLeft - 3, -1, dLeft + distanceWidth + 2, 9, DISTANCE_BACKGROUND);
-        context.drawText(textRenderer, distanceText, dLeft, 0, DISTANCE_COLOR, true);
+        graphics.fill(dLeft - 3, -1, dLeft + distanceWidth + 2, 9, DISTANCE_BACKGROUND);
+        graphics.text(font, distanceText, dLeft, 0, DISTANCE_COLOR, true);
         matrices.popMatrix();
     }
 
