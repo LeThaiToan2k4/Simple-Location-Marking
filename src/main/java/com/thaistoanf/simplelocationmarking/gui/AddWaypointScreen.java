@@ -117,8 +117,8 @@ public final class AddWaypointScreen extends Screen {
         nameBox.setMaxLength(48);
         nameBox.setValue(draftName);
         nameBox.setHint(Component.translatable("simplelocationmarking.field.name.placeholder"));
-        nameBox.setResponder((@NonNull String text) -> {
-            draftName = text;
+        nameBox.setResponder(text -> {
+            draftName = TextUtil.nonNull(text);
             updateAddButtonState();
         });
         addRenderableWidget(nameBox);

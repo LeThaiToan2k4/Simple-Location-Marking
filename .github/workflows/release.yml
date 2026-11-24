@@ -30,6 +30,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: >-
           gh release create "${GITHUB_REF_NAME}"
-          build/libs/simplelocationmarking-fabric-26.1.1-1.0.0.jar
+          build/libs/simplelocationmarking-fabric-26.1.2-1.0.0.jar
           --title "Simple Location Marking ${GITHUB_REF_NAME}"
           --generate-notes

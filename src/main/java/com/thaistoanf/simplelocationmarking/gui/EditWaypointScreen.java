@@ -112,8 +112,8 @@ public final class EditWaypointScreen extends Screen {
         nameBox.setEditable(true);
         nameBox.setValue(draftName);
         nameBox.setHint(Component.translatable("simplelocationmarking.field.name.placeholder"));
-        nameBox.setResponder((@NonNull String text) -> {
-            draftName = text;
+        nameBox.setResponder(text -> {
+            draftName = TextUtil.nonNull(text);
             updateSubmitButtonState();
         });
         addRenderableWidget(nameBox);
@@ -130,23 +130,23 @@ public final class EditWaypointScreen extends Screen {
 
         int xFieldX = innerLeft + labelPad;
         EditBox xBox = createEditableCoordField(xFieldX, coordsFieldY, singleWidth, draftX,
-                "simplelocationmarking.field.x", (@NonNull String text) -> {
-                    draftX = text;
+                "simplelocationmarking.field.x", text -> {
+                    draftX = TextUtil.nonNull(text);
                     updateSubmitButtonState();
                 });
 
         int yFieldX = xFieldX + singleWidth + coordGap + labelPad;
         EditBox yBox = createEditableCoordField(yFieldX, coordsFieldY, singleWidth, draftY,
-                "simplelocationmarking.field.y", (@NonNull String text) -> {
-                    draftY = text;
+                "simplelocationmarking.field.y", text -> {
+                    draftY = TextUtil.nonNull(text);
                     updateSubmitButtonState();
                 });
 
         int zFieldX = yFieldX + singleWidth + coordGap + labelPad;
         int zWidth = innerRight - zFieldX;
         EditBox zBox = createEditableCoordField(zFieldX, coordsFieldY, zWidth, draftZ,
-                "simplelocationmarking.field.z", (@NonNull String text) -> {
-                    draftZ = text;
+                "simplelocationmarking.field.z", text -> {
+                    draftZ = TextUtil.nonNull(text);
                     updateSubmitButtonState();
                 });
 
@@ -202,7 +202,7 @@ public final class EditWaypointScreen extends Screen {
 
     private @NonNull EditBox createEditableCoordField(int x, int y, int width, @NonNull String initial,
                                                       @NonNull String translationKey,
-                                                      @NonNull Consumer<@NonNull String> listener) {
+                                                      @NonNull Consumer<String> listener) {
         EditBox field = new IntEditBox(this.font, x, y, width, 16, Component.translatable(translationKey));
         field.setMaxLength(11);
         field.setEditable(true);
