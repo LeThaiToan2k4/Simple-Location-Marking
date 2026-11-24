@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.thaistoanf.simplelocationmarking.SimpleLocationMarkingClient;
+import com.thaistoanf.simplelocationmarking.util.TextUtil;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
@@ -11,6 +12,8 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -40,20 +43,21 @@ public final class WaypointManager {
     private static final List<Waypoint> WAYPOINTS = new ArrayList<>();
     private static final List<Waypoint> WAYPOINTS_VIEW = Collections.unmodifiableList(WAYPOINTS);
 
-    private static String currentKey;
-    private static Path currentFile;
+    private static @Nullable String currentKey;
+    private static @Nullable Path currentFile;
 
     // Cached dimension id so that per-frame callers do not allocate a new string.
-    private static ResourceKey<Level> cachedDimensionKey;
-    private static String cachedDimensionId = "minecraft:overworld";
+    private static @Nullable ResourceKey<Level> cachedDimensionKey;
+    private static @NonNull String cachedDimensionId = "minecraft:overworld";
 
     private WaypointManager() {
     }
 
     /** Persisted file layout. */
     private static final class StorageFile {
+        @SuppressWarnings("unused")
         int version = FILE_FORMAT_VERSION;
-        List<Waypoint> waypoints = new ArrayList<>();
+        @Nullable List<Waypoint> waypoints = new ArrayList<>();
     }
 
     // ------------------------------------------------------------------------------------------
@@ -61,7 +65,7 @@ public final class WaypointManager {
     // ------------------------------------------------------------------------------------------
 
     /** Called when the client joins a world or server. */
-    public static void onJoin(Minecraft client) {
+    public static void onJoin(@NonNull Minecraft client) {
         String key = computeStorageKey(client);
         if (!key.equals(currentKey)) {
             load(key);
@@ -83,29 +87,29 @@ public final class WaypointManager {
      * Lazily loads the storage file if a world is active but no join event was
      * observed yet.
      */
-    public static void ensureLoaded(Minecraft client) {
+    public static void ensureLoaded(@NonNull Minecraft client) {
         if (currentKey == null && client.level != null) {
             load(computeStorageKey(client));
         }
     }
 
-    private static String computeStorageKey(Minecraft client) {
+    private static @NonNull String computeStorageKey(@NonNull Minecraft client) {
         IntegratedServer server = client.getSingleplayerServer();
         if (client.isLocalServer() && server != null) {
             Path root = server.getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize();
             Path folder = root.getFileName();
-            String name = folder != null ? folder.toString() : server.getWorldData().getLevelName();
+            String name = folder != null ? TextUtil.nonNull(folder.toString()) : server.getWorldData().getLevelName();
             return "singleplayer_" + sanitizeFileName(name);
         }
         ServerData entry = client.getCurrentServer();
-        if (entry != null && entry.ip != null && !entry.ip.isBlank()) {
+        if (entry != null && !entry.ip.isBlank()) {
             String prefix = entry.isRealm() ? "realms_" : "multiplayer_";
-            return prefix + sanitizeFileName(entry.ip.trim().toLowerCase(Locale.ROOT));
+            return prefix + sanitizeFileName(TextUtil.nonNull(entry.ip.trim().toLowerCase(Locale.ROOT)));
         }
         return "unknown_session";
     }
 
-    static String sanitizeFileName(String raw) {
+    static @NonNull String sanitizeFileName(@NonNull String raw) {
         StringBuilder sb = new StringBuilder(raw.length());
         for (int i = 0; i < raw.length(); i++) {
             char c = raw.charAt(i);
@@ -119,7 +123,7 @@ public final class WaypointManager {
         if (sb.isEmpty()) {
             sb.append("default");
         }
-        return sb.toString();
+        return TextUtil.nonNull(sb.toString());
     }
 
     private static Path storageDirectory() {
@@ -130,15 +134,16 @@ public final class WaypointManager {
     // Persistence
     // ------------------------------------------------------------------------------------------
 
-    private static void load(String key) {
+    private static void load(@NonNull String key) {
         WAYPOINTS.clear();
         currentKey = key;
-        currentFile = storageDirectory().resolve(key + ".json");
+        Path file = storageDirectory().resolve(key + ".json");
+        currentFile = file;
 
-        if (!Files.isRegularFile(currentFile)) {
+        if (!Files.isRegularFile(file)) {
             return;
         }
-        try (Reader reader = Files.newBufferedReader(currentFile, StandardCharsets.UTF_8)) {
+        try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
             StorageFile data = GSON.fromJson(reader, StorageFile.class);
             if (data != null && data.waypoints != null) {
                 for (Waypoint waypoint : data.waypoints) {
@@ -149,31 +154,38 @@ public final class WaypointManager {
                 }
             }
             SimpleLocationMarkingClient.LOGGER.info("Loaded {} waypoints from {}", WAYPOINTS.size(),
-                    currentFile.getFileName());
+                    file.getFileName());
         } catch (IOException | JsonParseException e) {
-            SimpleLocationMarkingClient.LOGGER.error("Failed to read waypoint file {}", currentFile, e);
+            SimpleLocationMarkingClient.LOGGER.error("Failed to read waypoint file {}", file, e);
         }
     }
 
     public static void save() {
-        if (currentFile == null) {
+        Path file = currentFile;
+        if (file == null) {
             return;
         }
         StorageFile data = new StorageFile();
-        data.waypoints.addAll(WAYPOINTS);
+        List<Waypoint> out = data.waypoints;
+        if (out != null) {
+            out.addAll(WAYPOINTS);
+        }
         try {
-            Files.createDirectories(currentFile.getParent());
-            Path temp = currentFile.resolveSibling(currentFile.getFileName() + ".tmp");
+            Path parent = file.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Path temp = file.resolveSibling(file.getFileName() + ".tmp");
             try (Writer writer = Files.newBufferedWriter(temp, StandardCharsets.UTF_8)) {
                 GSON.toJson(data, writer);
             }
             try {
-                Files.move(temp, currentFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                Files.move(temp, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             } catch (AtomicMoveNotSupportedException e) {
-                Files.move(temp, currentFile, StandardCopyOption.REPLACE_EXISTING);
+                Files.move(temp, file, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException e) {
-            SimpleLocationMarkingClient.LOGGER.error("Failed to save waypoint file {}", currentFile, e);
+            SimpleLocationMarkingClient.LOGGER.error("Failed to save waypoint file {}", file, e);
         }
     }
 
@@ -193,7 +205,7 @@ public final class WaypointManager {
      * Fills {@code out} with the waypoints of the given dimension, without
      * allocating.
      */
-    public static void collectForDimension(String dimensionId, List<Waypoint> out) {
+    public static void collectForDimension(@NonNull String dimensionId, @NonNull List<Waypoint> out) {
         out.clear();
         for (int i = 0, n = WAYPOINTS.size(); i < n; i++) {
             Waypoint waypoint = WAYPOINTS.get(i);
@@ -203,18 +215,18 @@ public final class WaypointManager {
         }
     }
 
-    public static void add(Waypoint waypoint) {
+    public static void add(@NonNull Waypoint waypoint) {
         WAYPOINTS.add(waypoint);
         save();
     }
 
-    public static void remove(Waypoint waypoint) {
+    public static void remove(@NonNull Waypoint waypoint) {
         if (WAYPOINTS.remove(waypoint)) {
             save();
         }
     }
 
-    public static void toggleHidden(Waypoint waypoint) {
+    public static void toggleHidden(@NonNull Waypoint waypoint) {
         waypoint.hidden = !waypoint.hidden;
         save();
     }
@@ -228,11 +240,11 @@ public final class WaypointManager {
      * Returns the identifier string of the level's dimension, cached per dimension
      * key.
      */
-    public static String dimensionId(Level level) {
+    public static @NonNull String dimensionId(@NonNull Level level) {
         ResourceKey<Level> key = level.dimension();
         if (key != cachedDimensionKey) {
             cachedDimensionKey = key;
-            cachedDimensionId = key.identifier().toString();
+            cachedDimensionId = TextUtil.nonNull(key.identifier().toString());
         }
         return cachedDimensionId;
     }

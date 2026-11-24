@@ -5,6 +5,8 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.state.GameRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.joml.Matrix4f;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,8 +23,9 @@ public abstract class GameRendererMixin {
 
     @Shadow
     @Final
-    private GameRenderState gameRenderState;
+    private @Nullable GameRenderState gameRenderState;
 
+    @SuppressWarnings("unused")
     @ModifyArg(
             method = "renderLevel(Lnet/minecraft/client/DeltaTracker;)V",
             at = @At(
@@ -31,9 +34,12 @@ public abstract class GameRendererMixin {
             ),
             index = 0
     )
-    private Matrix4f simplelocationmarking$captureProjection(Matrix4f projectionMatrix) {
-        CameraRenderState camera = this.gameRenderState.levelRenderState.cameraRenderState;
-        ProjectionState.capture(camera.viewRotationMatrix, projectionMatrix, camera.pos);
+    private @NonNull Matrix4f simplelocationmarking$captureProjection(@NonNull Matrix4f projectionMatrix) {
+        GameRenderState renderState = this.gameRenderState;
+        if (renderState != null) {
+            CameraRenderState camera = renderState.levelRenderState.cameraRenderState;
+            ProjectionState.capture(camera.viewRotationMatrix, projectionMatrix, camera.pos);
+        }
         return projectionMatrix;
     }
 }

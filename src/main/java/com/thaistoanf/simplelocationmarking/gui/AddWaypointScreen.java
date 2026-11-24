@@ -1,6 +1,7 @@
 package com.thaistoanf.simplelocationmarking.gui;
 
 import com.thaistoanf.simplelocationmarking.gui.widget.HexColorPalette;
+import com.thaistoanf.simplelocationmarking.util.TextUtil;
 import com.thaistoanf.simplelocationmarking.waypoint.Waypoint;
 import com.thaistoanf.simplelocationmarking.waypoint.WaypointManager;
 import net.minecraft.client.Minecraft;
@@ -10,11 +11,15 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Locale;
@@ -30,20 +35,20 @@ import java.util.Random;
 public final class AddWaypointScreen extends Screen {
     private static final int HEADER_HEIGHT = 24;
 
-    private final LocationListScreen parent;
-    private final HexColorPalette palette = new HexColorPalette();
+    private final @NonNull LocationListScreen parent;
+    private final @NonNull HexColorPalette palette = new HexColorPalette();
 
-    private String draftName = "";
+    private @NonNull String draftName = "";
     private final int playerX;
     private final int playerY;
     private final int playerZ;
-    private final String dimensionId;
+    private final @NonNull String dimensionId;
 
-    private EditBox nameField;
-    private EditBox xField;
-    private EditBox yField;
-    private EditBox zField;
-    private Button addButton;
+    private @Nullable EditBox nameField;
+    private @Nullable EditBox xField;
+    private @Nullable EditBox yField;
+    private @Nullable EditBox zField;
+    private @Nullable Button addButton;
 
     private int panelLeft;
     private int panelTop;
@@ -66,17 +71,19 @@ public final class AddWaypointScreen extends Screen {
 
     private int coordsFieldY;
 
-    public AddWaypointScreen(LocationListScreen parent) {
+    public AddWaypointScreen(@NonNull LocationListScreen parent) {
         super(Component.translatable("simplelocationmarking.screen.add.title"));
         this.parent = parent;
         this.palette.selectRandom(new Random());
 
         Minecraft mc = Minecraft.getInstance();
-        BlockPos pos = (mc.player != null) ? mc.player.blockPosition() : BlockPos.ZERO;
+        LocalPlayer player = mc.player;
+        BlockPos pos = (player != null) ? player.blockPosition() : BlockPos.ZERO;
         this.playerX = pos.getX();
         this.playerY = pos.getY();
         this.playerZ = pos.getZ();
-        this.dimensionId = (mc.level != null) ? WaypointManager.dimensionId(mc.level) : "minecraft:overworld";
+        ClientLevel level = mc.level;
+        this.dimensionId = (level != null) ? WaypointManager.dimensionId(level) : "minecraft:overworld";
     }
 
     @Override
@@ -100,21 +107,22 @@ public final class AddWaypointScreen extends Screen {
         namePanelTop = panelTop + HEADER_HEIGHT + 5;
         namePanelBottom = namePanelTop + 36;
         int nameFieldY = namePanelTop + 15;
-        nameField = new EditBox(
+        EditBox nameBox = new EditBox(
                 this.font,
                 innerLeft,
                 nameFieldY,
                 innerWidth,
                 16,
                 Component.translatable("simplelocationmarking.field.name"));
-        nameField.setMaxLength(48);
-        nameField.setValue(draftName);
-        nameField.setHint(Component.translatable("simplelocationmarking.field.name.placeholder"));
-        nameField.setResponder(text -> {
+        nameBox.setMaxLength(48);
+        nameBox.setValue(draftName);
+        nameBox.setHint(Component.translatable("simplelocationmarking.field.name.placeholder"));
+        nameBox.setResponder(text -> {
             draftName = text;
             updateAddButtonState();
         });
-        addRenderableWidget(nameField);
+        addRenderableWidget(nameBox);
+        nameField = nameBox;
 
         // 2. Read-only X, Y, Z coordinate sub-panel
         coordsPanelTop = namePanelBottom + 4;
@@ -126,21 +134,24 @@ public final class AddWaypointScreen extends Screen {
         int singleWidth = (innerWidth - coordGap * 2 - labelPad * 3) / 3;
 
         int xFieldX = innerLeft + labelPad;
-        xField = createReadOnlyCoordField(xFieldX, coordsFieldY, singleWidth, Integer.toString(playerX),
+        EditBox xBox = createReadOnlyCoordField(xFieldX, coordsFieldY, singleWidth, "" + playerX,
                 "simplelocationmarking.field.x");
 
         int yFieldX = xFieldX + singleWidth + coordGap + labelPad;
-        yField = createReadOnlyCoordField(yFieldX, coordsFieldY, singleWidth, Integer.toString(playerY),
+        EditBox yBox = createReadOnlyCoordField(yFieldX, coordsFieldY, singleWidth, "" + playerY,
                 "simplelocationmarking.field.y");
 
         int zFieldX = yFieldX + singleWidth + coordGap + labelPad;
         int zWidth = innerRight - zFieldX;
-        zField = createReadOnlyCoordField(zFieldX, coordsFieldY, zWidth, Integer.toString(playerZ),
+        EditBox zBox = createReadOnlyCoordField(zFieldX, coordsFieldY, zWidth, "" + playerZ,
                 "simplelocationmarking.field.z");
 
-        addRenderableWidget(xField);
-        addRenderableWidget(yField);
-        addRenderableWidget(zField);
+        addRenderableWidget(xBox);
+        addRenderableWidget(yBox);
+        addRenderableWidget(zBox);
+        xField = xBox;
+        yField = yBox;
+        zField = zBox;
 
         // 3. Hexagon Color Palette & Live Preview sub-panel
         int buttonY = panelBottom - 25;
@@ -181,11 +192,12 @@ public final class AddWaypointScreen extends Screen {
                 .bounds(subLeft + btnWidth + btnGap, buttonY, (subRight - subLeft) - btnWidth - btnGap, 20)
                 .build());
 
-        setInitialFocus(nameField);
+        setInitialFocus(nameBox);
         updateAddButtonState();
     }
 
-    private EditBox createReadOnlyCoordField(int x, int y, int width, String value, String translationKey) {
+    private @NonNull EditBox createReadOnlyCoordField(int x, int y, int width, @NonNull String value,
+                                                      @NonNull String translationKey) {
         EditBox field = new EditBox(this.font, x, y, width, 16,
                 Component.translatable(translationKey));
         field.setValue(value);
@@ -196,16 +208,19 @@ public final class AddWaypointScreen extends Screen {
     }
 
     private void updateAddButtonState() {
-        if (addButton != null) {
-            addButton.active = nameField != null && !nameField.getValue().trim().isEmpty();
+        Button btn = addButton;
+        EditBox nf = nameField;
+        if (btn != null) {
+            btn.active = nf != null && !nf.getValue().trim().isEmpty();
         }
     }
 
     private void saveAndClose() {
-        if (nameField == null) {
+        EditBox nf = nameField;
+        if (nf == null) {
             return;
         }
-        String trimmedName = nameField.getValue().trim();
+        String trimmedName = TextUtil.nonNull(nf.getValue().trim());
         if (trimmedName.isEmpty()) {
             return;
         }
@@ -223,12 +238,12 @@ public final class AddWaypointScreen extends Screen {
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+    public void extractBackground(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         GlassUi.drawScreenBackdrop(graphics, this.width, this.height);
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+    public void extractRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         int centerX = this.width / 2;
         int innerLeft = subLeft + 8;
 
@@ -254,12 +269,21 @@ public final class AddWaypointScreen extends Screen {
                 coordsPanelTop + 4,
                 0xFFD0D8EC);
         int prefixY = coordsFieldY + 4;
-        graphics.text(this.font, Component.translatable("simplelocationmarking.field.x"),
-                xField.getX() - 10, prefixY, 0xFFFF8080);
-        graphics.text(this.font, Component.translatable("simplelocationmarking.field.y"),
-                yField.getX() - 10, prefixY, 0xFF80FF98);
-        graphics.text(this.font, Component.translatable("simplelocationmarking.field.z"),
-                zField.getX() - 10, prefixY, 0xFF80B8FF);
+        EditBox xf = xField;
+        EditBox yf = yField;
+        EditBox zf = zField;
+        if (xf != null) {
+            graphics.text(this.font, Component.translatable("simplelocationmarking.field.x"),
+                    xf.getX() - 10, prefixY, 0xFFFF8080);
+        }
+        if (yf != null) {
+            graphics.text(this.font, Component.translatable("simplelocationmarking.field.y"),
+                    yf.getX() - 10, prefixY, 0xFF80FF98);
+        }
+        if (zf != null) {
+            graphics.text(this.font, Component.translatable("simplelocationmarking.field.z"),
+                    zf.getX() - 10, prefixY, 0xFF80B8FF);
+        }
 
         // 4. Color Palette & Live Preview Sub-Panel
         GlassUi.drawSubPanel(graphics, subLeft, colorPanelTop, subRight, colorPanelBottom);
@@ -279,7 +303,7 @@ public final class AddWaypointScreen extends Screen {
         super.extractRenderState(graphics, mouseX, mouseY, a);
     }
 
-    private void renderPreviewBox(GuiGraphicsExtractor graphics) {
+    private void renderPreviewBox(@NonNull GuiGraphicsExtractor graphics) {
         int selectedRgb = palette.getSelectedColor() & 0xFFFFFF;
         GlassUi.drawPill(graphics, previewLeft, previewTop, previewRight, previewBottom, 0xB010131C, 0xFF2E364C);
 
@@ -288,7 +312,8 @@ public final class AddWaypointScreen extends Screen {
         graphics.centeredText(this.font, previewLabel, pCenterX, previewTop + 4, 0xFFB8C4DC);
 
         // Live HUD Marker preview (compact badge + expanded hover pill + distance pill)
-        String previewName = (nameField != null) ? nameField.getValue() : draftName;
+        EditBox nf = nameField;
+        String previewName = (nf != null) ? nf.getValue() : draftName;
         GlassUi.drawLiveMarkerPreview(
                 graphics,
                 this.font,
@@ -300,7 +325,7 @@ public final class AddWaypointScreen extends Screen {
                 previewBottom - 16);
 
         // Glowing swatch + #RRGGBB code at the bottom of the preview box
-        String hexCode = String.format(Locale.ROOT, "#%06X", selectedRgb);
+        String hexCode = TextUtil.nonNull(String.format(Locale.ROOT, "#%06X", selectedRgb));
         int hexW = this.font.width(hexCode);
         int swatchSize = 9;
         int totalW = swatchSize + 5 + hexW;
@@ -311,21 +336,19 @@ public final class AddWaypointScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubled) {
+    public boolean mouseClicked(@NonNull MouseButtonEvent event, boolean doubled) {
         if (palette.mouseClicked(event.x(), event.y(), event.button())) {
-            if (minecraft != null) {
-                minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.2f));
-            }
+            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.2f));
             return true;
         }
         return super.mouseClicked(event, doubled);
     }
 
     @Override
-    public boolean keyPressed(KeyEvent event) {
+    public boolean keyPressed(@NonNull KeyEvent event) {
         int keyCode = event.key();
-        if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && addButton != null
-                && addButton.active) {
+        Button btn = addButton;
+        if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && btn != null && btn.active) {
             saveAndClose();
             return true;
         }
@@ -334,9 +357,7 @@ public final class AddWaypointScreen extends Screen {
 
     @Override
     public void onClose() {
-        if (minecraft != null) {
-            minecraft.setScreen(parent);
-        }
+        this.minecraft.setScreen(parent);
     }
 
     @Override

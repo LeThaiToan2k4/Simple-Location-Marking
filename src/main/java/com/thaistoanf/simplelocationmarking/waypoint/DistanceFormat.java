@@ -1,5 +1,8 @@
 package com.thaistoanf.simplelocationmarking.waypoint;
 
+import com.thaistoanf.simplelocationmarking.util.TextUtil;
+import org.jspecify.annotations.NonNull;
+
 import java.util.Locale;
 
 /**
@@ -20,11 +23,10 @@ public final class DistanceFormat {
         return -1L - Math.round(distance / 100.0);
     }
 
-    public static String format(double distance) {
+    public static @NonNull String format(double distance) {
         if (distance < KM_THRESHOLD) {
             return ((long) distance) + "m";
         }
-        return String.format(Locale.ROOT, "%.1fkm", Math.round(distance / 100.0) / 10.0);
+        return TextUtil.nonNull(String.format(Locale.ROOT, "%.1fkm", Math.round(distance / 100.0) / 10.0));
     }
 }
-

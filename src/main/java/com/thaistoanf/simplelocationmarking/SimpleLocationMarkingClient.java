@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.NonNull;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,21 +23,19 @@ import org.slf4j.LoggerFactory;
  * Client entrypoint of Simple Location Marking.
  */
 public final class SimpleLocationMarkingClient implements ClientModInitializer {
-    public static final String MOD_ID = "simplelocationmarking";
+    public static final @NonNull String MOD_ID = "simplelocationmarking";
     public static final Logger LOGGER = LoggerFactory.getLogger("Simple Location Marking");
 
     /** Translation key: {@code key.category.simplelocationmarking.main}. */
-    public static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(id("main"));
+    public static final KeyMapping.@NonNull Category KEY_CATEGORY = KeyMapping.Category.register(id("main"));
 
-    private static KeyMapping openScreenKey;
-
-    public static Identifier id(String path) {
+    public static @NonNull Identifier id(@NonNull String path) {
         return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 
     @Override
     public void onInitializeClient() {
-        openScreenKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        KeyMapping openScreenKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.simplelocationmarking.open",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_P,
@@ -69,7 +68,7 @@ public final class SimpleLocationMarkingClient implements ClientModInitializer {
         LOGGER.info("Simple Location Marking initialized");
     }
 
-    private static void runOnClientThread(Minecraft client, Runnable task) {
+    private static void runOnClientThread(@NonNull Minecraft client, @NonNull Runnable task) {
         if (client.isSameThread()) {
             task.run();
         } else {

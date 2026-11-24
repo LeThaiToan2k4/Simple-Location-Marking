@@ -3,6 +3,7 @@ package com.thaistoanf.simplelocationmarking.render;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Holds the camera matrices of the most recent world render pass.
@@ -13,7 +14,7 @@ import org.joml.Matrix4fc;
  */
 public final class ProjectionState {
     /** projection * view (rotation only, camera-relative coordinates). */
-    private static final Matrix4f VIEW_PROJECTION = new Matrix4f();
+    private static final @NonNull Matrix4f VIEW_PROJECTION = new Matrix4f();
 
     private static double cameraX;
     private static double cameraY;
@@ -29,7 +30,7 @@ public final class ProjectionState {
     private ProjectionState() {
     }
 
-    public static void capture(Matrix4fc view, Matrix4fc projection, Vec3 cameraPos) {
+    public static void capture(@NonNull Matrix4fc view, @NonNull Matrix4fc projection, @NonNull Vec3 cameraPos) {
         VIEW_PROJECTION.set(projection).mul(view);
         // Strip translational / clip-plane depth terms from the 4th column so unit-sphere
         // direction vectors project purely by camera orientation and FOV at any distance.
@@ -53,7 +54,7 @@ public final class ProjectionState {
         return valid;
     }
 
-    public static Matrix4f viewProjection() {
+    public static @NonNull Matrix4f viewProjection() {
         return VIEW_PROJECTION;
     }
 

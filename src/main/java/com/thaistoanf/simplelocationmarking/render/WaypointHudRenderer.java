@@ -13,6 +13,7 @@ import net.minecraft.client.player.LocalPlayer;
 import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -43,7 +44,7 @@ public final class WaypointHudRenderer implements HudElement {
     private static final int DISTANCE_BACKGROUND = GlassUi.HUD_DISTANCE_BG; // 0x80000000
     private static final int DISTANCE_COLOR = GlassUi.HUD_DISTANCE_TEXT;    // 0xFFE0E0E0
 
-    private final Vector4f clip = new Vector4f();
+    private final @NonNull Vector4f clip = new Vector4f();
 
     private Waypoint[] visible = new Waypoint[32];
     private float[] screenX = new float[32];
@@ -52,7 +53,7 @@ public final class WaypointHudRenderer implements HudElement {
     private int count;
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker) {
+    public void extractRenderState(@NonNull GuiGraphicsExtractor graphics, @NonNull DeltaTracker deltaTracker) {
         Minecraft client = Minecraft.getInstance();
         LocalPlayer player = client.player;
         ClientLevel level = client.level;
@@ -206,7 +207,7 @@ public final class WaypointHudRenderer implements HudElement {
         }
     }
 
-    private static void drawMarker(GuiGraphicsExtractor graphics, Font font, Waypoint waypoint,
+    private static void drawMarker(@NonNull GuiGraphicsExtractor graphics, @NonNull Font font, Waypoint waypoint,
                                    float sx, float sy, double distanceValue) {
         int cx = Math.round(sx);
         int cy = Math.round(sy);

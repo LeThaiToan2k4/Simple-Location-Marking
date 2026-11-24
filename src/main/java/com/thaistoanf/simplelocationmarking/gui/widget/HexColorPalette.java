@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2fStack;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Random;
 
@@ -136,7 +137,7 @@ public final class HexColorPalette {
     }
 
     /** Selects a random colored cell of the honeycomb (skipping the near-white center rings). */
-    public void selectRandom(Random random) {
+    public void selectRandom(@NonNull Random random) {
         int firstColored = 1 + 3 * 2; // skip ring 0 and ring 1
         int index = firstColored + random.nextInt(honeycombCount - firstColored);
         // Indices are not ordered by ring, so retry until a saturated enough cell is found.
@@ -211,7 +212,7 @@ public final class HexColorPalette {
     // Rendering
     // ------------------------------------------------------------------------------------------
 
-    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    public void render(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         hoveredIndex = cellAt(mouseX, mouseY);
 
         int scale = Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
@@ -262,7 +263,7 @@ public final class HexColorPalette {
      * (physical pixel) coordinate space. The middle band is a single rectangle; the top and bottom
      * triangles are drawn as one-pixel scanlines.
      */
-    private static void fillHex(GuiGraphicsExtractor graphics, float cx, float cy, float r, int argb) {
+    private static void fillHex(@NonNull GuiGraphicsExtractor graphics, float cx, float cy, float r, int argb) {
         if (r <= 0.5f) {
             return;
         }

@@ -2,6 +2,8 @@ package com.thaistoanf.simplelocationmarking.waypoint;
 
 import com.thaistoanf.simplelocationmarking.util.TextUtil;
 import net.minecraft.client.gui.Font;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -12,36 +14,36 @@ import java.util.UUID;
  * render caches so that the HUD renderer never needs to allocate strings while drawing.
  */
 public final class Waypoint {
-    public String id;
-    public String name;
+    public @Nullable String id;
+    public @Nullable String name;
     public int x;
     public int y;
     public int z;
     /** RGB color without alpha (0xRRGGBB). */
     public int color;
     /** Dimension identifier, for example {@code minecraft:overworld}. */
-    public String dimension;
+    public @Nullable String dimension;
     public boolean hidden;
 
     // ---- Transient render caches (not saved) ----
     /** Smooth hover expansion progress in the range [0, 1]. */
     public transient float hoverProgress;
 
-    private transient String cachedNameSource;
-    private transient String cachedDisplayName;
-    private transient String cachedInitial;
+    private transient @Nullable String cachedNameSource;
+    private transient @NonNull String cachedDisplayName = "";
+    private transient @NonNull String cachedInitial = "?";
     private transient int cachedDisplayNameWidth = -1;
     private transient int cachedInitialWidth = -1;
 
     private transient long cachedDistanceKey = Long.MIN_VALUE;
-    private transient String cachedDistanceText = "";
+    private transient @NonNull String cachedDistanceText = "";
     private transient int cachedDistanceWidth = -1;
 
     /** Required by Gson. */
     public Waypoint() {
     }
 
-    public Waypoint(String name, int x, int y, int z, int color, String dimension) {
+    public Waypoint(@NonNull String name, int x, int y, int z, int color, @NonNull String dimension) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.x = x;
@@ -77,18 +79,18 @@ public final class Waypoint {
     }
 
     /** Name with the first letter capitalized. Cached until the name changes. */
-    public String displayName() {
+    public @NonNull String displayName() {
         refreshNameCache();
         return cachedDisplayName;
     }
 
     /** Uppercase first letter of the name. Cached until the name changes. */
-    public String initial() {
+    public @NonNull String initial() {
         refreshNameCache();
         return cachedInitial;
     }
 
-    public int displayNameWidth(Font font) {
+    public int displayNameWidth(@NonNull Font font) {
         refreshNameCache();
         if (cachedDisplayNameWidth < 0) {
             cachedDisplayNameWidth = font.width(cachedDisplayName);
@@ -96,7 +98,7 @@ public final class Waypoint {
         return cachedDisplayNameWidth;
     }
 
-    public int initialWidth(Font font) {
+    public int initialWidth(@NonNull Font font) {
         refreshNameCache();
         if (cachedInitialWidth < 0) {
             cachedInitialWidth = font.width(cachedInitial);
@@ -108,7 +110,7 @@ public final class Waypoint {
      * Returns the formatted distance label. The string is only rebuilt when the visible value
      * (whole meters or tenths of kilometers) changes.
      */
-    public String distanceText(double distance) {
+    public @NonNull String distanceText(double distance) {
         long key = DistanceFormat.key(distance);
         if (key != cachedDistanceKey) {
             cachedDistanceKey = key;
@@ -119,7 +121,7 @@ public final class Waypoint {
     }
 
     /** Width of the last value returned by {@link #distanceText(double)}. */
-    public int distanceWidth(Font font) {
+    public int distanceWidth(@NonNull Font font) {
         if (cachedDistanceWidth < 0) {
             cachedDistanceWidth = font.width(cachedDistanceText);
         }

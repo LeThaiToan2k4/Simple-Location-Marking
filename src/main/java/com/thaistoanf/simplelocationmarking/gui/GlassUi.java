@@ -4,6 +4,8 @@ import com.thaistoanf.simplelocationmarking.util.TextUtil;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.joml.Matrix3x2fStack;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Shared color constants and drawing primitives for the Translucent Dark Glass UI theme.
@@ -43,14 +45,14 @@ public final class GlassUi {
     }
 
     /** Renders the subtle dark translucent full-screen overlay over the live game world. */
-    public static void drawScreenBackdrop(GuiGraphicsExtractor graphics, int width, int height) {
+    public static void drawScreenBackdrop(@NonNull GuiGraphicsExtractor graphics, int width, int height) {
         graphics.fill(0, 0, width, height, SCREEN_BACKDROP);
     }
 
     /**
      * Renders the centered Translucent Glass Main Panel with a top header bar and crisp 1px border.
      */
-    public static void drawMainPanel(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int headerHeight) {
+    public static void drawMainPanel(@NonNull GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int headerHeight) {
         // Outer subtle drop shadow
         graphics.fill(left - 2, top - 2, right + 2, bottom + 2, 0x38000000);
         // Main glass panel body
@@ -69,7 +71,7 @@ public final class GlassUi {
     /**
      * Renders a recessed translucent dark sub-panel with a crisp 1px border.
      */
-    public static void drawSubPanel(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom) {
+    public static void drawSubPanel(@NonNull GuiGraphicsExtractor graphics, int left, int top, int right, int bottom) {
         graphics.fill(left, top, right, bottom, SUB_PANEL_BG);
         drawBorder(graphics, left, top, right, bottom, SUB_PANEL_BORDER);
     }
@@ -77,7 +79,7 @@ public final class GlassUi {
     /**
      * Renders a translucent pill box with a 1px border.
      */
-    public static void drawPill(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int fillColor, int borderColor) {
+    public static void drawPill(@NonNull GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int fillColor, int borderColor) {
         graphics.fill(left, top, right, bottom, fillColor);
         drawBorder(graphics, left, top, right, bottom, borderColor);
     }
@@ -85,7 +87,7 @@ public final class GlassUi {
     /**
      * Draws a 1px rectangle border inside the bounds {@code [left, top, right, bottom]}.
      */
-    public static void drawBorder(GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int color) {
+    public static void drawBorder(@NonNull GuiGraphicsExtractor graphics, int left, int top, int right, int bottom, int color) {
         if (right <= left || bottom <= top) {
             return;
         }
@@ -100,7 +102,7 @@ public final class GlassUi {
     /**
      * Renders a glowing colored square swatch with a 1px dark/white border.
      */
-    public static void drawGlowingSwatch(GuiGraphicsExtractor graphics, int x, int y, int size, int rgb) {
+    public static void drawGlowingSwatch(@NonNull GuiGraphicsExtractor graphics, int x, int y, int size, int rgb) {
         int cleanRgb = rgb & 0xFFFFFF;
         // Soft outer colored glow
         graphics.fill(x - 2, y - 2, x + size + 2, y + size + 2, 0x38000000 | cleanRgb);
@@ -139,8 +141,8 @@ public final class GlassUi {
      * Renders a live preview of both the compact default HUD badge and the expanded hover pill
      * inside the Add/Edit screen's preview panel.
      */
-    public static void drawLiveMarkerPreview(GuiGraphicsExtractor graphics, Font font,
-                                             String rawName, int rgb,
+    public static void drawLiveMarkerPreview(@NonNull GuiGraphicsExtractor graphics, @NonNull Font font,
+                                             @Nullable String rawName, int rgb,
                                              int boxLeft, int boxTop, int boxRight, int boxBottom) {
         int cleanRgb = rgb & 0xFFFFFF;
         int accent = 0xFF000000 | cleanRgb;

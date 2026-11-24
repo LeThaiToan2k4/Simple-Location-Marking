@@ -8,12 +8,15 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -34,10 +37,10 @@ public final class LocationListScreen extends Screen {
     private static final int ROW_PADDING = 5;
     private static final int SCROLLBAR_WIDTH = 4;
 
-    private final List<Waypoint> dimensionWaypoints = new ArrayList<>();
-    private String currentDimensionId = "minecraft:overworld";
+    private final @NonNull List<Waypoint> dimensionWaypoints = new ArrayList<>();
+    private @NonNull String currentDimensionId = "minecraft:overworld";
 
-    private Waypoint selected;
+    private @Nullable Waypoint selected;
     private double scrollOffset;
     private boolean draggingScrollbar;
 
@@ -51,19 +54,19 @@ public final class LocationListScreen extends Screen {
     private int listTop;
     private int listBottom;
 
-    private Button addButton;
-    private Button editButton;
-    private Button hideShowButton;
-    private Button deleteButton;
+    private @Nullable Button addButton;
+    private @Nullable Button editButton;
+    private @Nullable Button hideShowButton;
+    private @Nullable Button deleteButton;
 
     private long lastClickTimeMs;
-    private Waypoint lastClickedWaypoint;
+    private @Nullable Waypoint lastClickedWaypoint;
 
     public LocationListScreen() {
         super(Component.translatable("simplelocationmarking.screen.list.title"));
     }
 
-    public void setSelected(Waypoint waypoint) {
+    public void setSelected(@Nullable Waypoint waypoint) {
         this.selected = waypoint;
         updateButtonStates();
     }
@@ -72,8 +75,9 @@ public final class LocationListScreen extends Screen {
     protected void init() {
         super.init();
 
-        if (minecraft != null && minecraft.level != null) {
-            currentDimensionId = WaypointManager.dimensionId(minecraft.level);
+        ClientLevel level = this.minecraft.level;
+        if (level != null) {
+            currentDimensionId = WaypointManager.dimensionId(level);
         }
         reloadWaypoints();
 
@@ -132,43 +136,48 @@ public final class LocationListScreen extends Screen {
 
     private void updateButtonStates() {
         boolean hasSelection = selected != null && dimensionWaypoints.contains(selected);
-        if (addButton != null) {
-            addButton.active = true;
+        Button addBtn = addButton;
+        if (addBtn != null) {
+            addBtn.active = true;
         }
-        if (editButton != null) {
-            editButton.active = hasSelection;
+        Button editBtn = editButton;
+        if (editBtn != null) {
+            editBtn.active = hasSelection;
         }
-        if (hideShowButton != null) {
-            hideShowButton.active = hasSelection;
+        Button hideBtn = hideShowButton;
+        if (hideBtn != null) {
+            hideBtn.active = hasSelection;
         }
-        if (deleteButton != null) {
-            deleteButton.active = hasSelection;
+        Button delBtn = deleteButton;
+        if (delBtn != null) {
+            delBtn.active = hasSelection;
         }
     }
 
     private void openAddScreen() {
-        if (minecraft != null) {
-            minecraft.setScreen(new AddWaypointScreen(this));
-        }
+        this.minecraft.setScreen(new AddWaypointScreen(this));
     }
 
     private void openEditScreen() {
-        if (minecraft != null && selected != null) {
-            minecraft.setScreen(new EditWaypointScreen(this, selected));
+        Waypoint target = selected;
+        if (target != null) {
+            this.minecraft.setScreen(new EditWaypointScreen(this, target));
         }
     }
 
     private void toggleSelectedHidden() {
-        if (selected != null) {
-            WaypointManager.toggleHidden(selected);
+        Waypoint target = selected;
+        if (target != null) {
+            WaypointManager.toggleHidden(target);
             updateButtonStates();
         }
     }
 
     private void deleteSelected() {
-        if (selected != null) {
-            int idx = dimensionWaypoints.indexOf(selected);
-            WaypointManager.remove(selected);
+        Waypoint target = selected;
+        if (target != null) {
+            int idx = dimensionWaypoints.indexOf(target);
+            WaypointManager.remove(target);
             reloadWaypoints();
             if (!dimensionWaypoints.isEmpty() && idx >= 0) {
                 selected = dimensionWaypoints.get(Math.min(idx, dimensionWaypoints.size() - 1));
@@ -204,13 +213,13 @@ public final class LocationListScreen extends Screen {
     // ------------------------------------------------------------------------------------------
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+    public void extractBackground(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         // Subtle dark translucent full-screen overlay over the live game world (no blur or dirt background)
         GlassUi.drawScreenBackdrop(graphics, this.width, this.height);
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+    public void extractRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         int centerX = this.width / 2;
 
         // 1. Centered Translucent Glass Main Panel + Top Header Bar
@@ -241,7 +250,7 @@ public final class LocationListScreen extends Screen {
         super.extractRenderState(graphics, mouseX, mouseY, a);
     }
 
-    private void renderHeaderPills(GuiGraphicsExtractor graphics, int centerX, int pillTop) {
+    private void renderHeaderPills(@NonNull GuiGraphicsExtractor graphics, int centerX, int pillTop) {
         Component dimName = DimensionNames.of(currentDimensionId);
         String dimStr = dimName.getString();
 
@@ -271,7 +280,8 @@ public final class LocationListScreen extends Screen {
             }
         }
 
-        BlockPos pos = (minecraft != null && minecraft.player != null) ? minecraft.player.blockPosition() : BlockPos.ZERO;
+        LocalPlayer player = this.minecraft.player;
+        BlockPos pos = (player != null) ? player.blockPosition() : BlockPos.ZERO;
         String coordsStr = "X: " + pos.getX() + "  Y: " + pos.getY() + "  Z: " + pos.getZ();
 
         int pillHeight = 15;
@@ -297,8 +307,8 @@ public final class LocationListScreen extends Screen {
         graphics.text(this.font, coordsStr, coordsLeft + 7, pillTop + 4, 0xFFDCE6FF);
     }
 
-    private void renderRows(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        LocalPlayer player = minecraft != null ? minecraft.player : null;
+    private void renderRows(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        LocalPlayer player = this.minecraft.player;
         double px = player != null ? player.getX() : 0.0;
         double py = player != null ? player.getY() : 0.0;
         double pz = player != null ? player.getZ() : 0.0;
@@ -401,7 +411,7 @@ public final class LocationListScreen extends Screen {
         graphics.disableScissor();
     }
 
-    private void renderScrollbar(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    private void renderScrollbar(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         int max = maxScroll();
         if (max <= 0) {
             return;
@@ -439,7 +449,7 @@ public final class LocationListScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubled) {
+    public boolean mouseClicked(@NonNull MouseButtonEvent event, boolean doubled) {
         if (super.mouseClicked(event, doubled)) {
             return true;
         }
@@ -480,9 +490,7 @@ public final class LocationListScreen extends Screen {
 
                 selected = clicked;
                 updateButtonStates();
-                if (minecraft != null) {
-                    minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
-                }
+                this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
                 if (isDoubleClick) {
                     openEditScreen();
                 }
@@ -494,7 +502,7 @@ public final class LocationListScreen extends Screen {
     }
 
     @Override
-    public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
+    public boolean mouseDragged(@NonNull MouseButtonEvent event, double deltaX, double deltaY) {
         if (draggingScrollbar && event.button() == 0) {
             updateScrollFromMouse(event.y());
             return true;
@@ -503,7 +511,7 @@ public final class LocationListScreen extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
+    public boolean mouseReleased(@NonNull MouseButtonEvent event) {
         if (event.button() == 0 && draggingScrollbar) {
             draggingScrollbar = false;
             return true;
@@ -526,7 +534,7 @@ public final class LocationListScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(KeyEvent event) {
+    public boolean keyPressed(@NonNull KeyEvent event) {
         int keyCode = event.key();
         if (keyCode == GLFW.GLFW_KEY_DELETE && selected != null) {
             deleteSelected();
